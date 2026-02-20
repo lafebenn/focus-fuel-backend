@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Check, X, ArrowRight, HelpCircle } from 'lucide-react';
+import { Search, Plus, Check, X, ArrowRight, HelpCircle, Wifi, WifiOff } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { generateId, formatTime } from '@/utils/mockData';
 import { getSmartSuggestions, getSuggestionsFromRecentEats, smartSuggestionTagColorMap } from '@/utils/smartSuggestions';
@@ -9,6 +9,7 @@ import type { FoodLog, MoodLog } from '@/utils/mockData';
 import { useNavigate } from 'react-router-dom';
 import ConfettiEffect from '@/components/ConfettiEffect';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { foodLogAPI, checkBackendHealth } from '@/api/foodLogAPI';
 
 export default function FoodLogPage() {
   const [foodLogs, setFoodLogs] = useLocalStorage<FoodLog[]>('foodLogs', []);
@@ -16,7 +17,17 @@ export default function FoodLogPage() {
   const [search, setSearch] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastAdded, setLastAdded] = useState('');
+  const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkBackend = async () => {
+      const isHealthy = await checkBackendHealth();
+      setBackendConnected(isHealthy);
+    };
+    checkBackend();
+  }, []);
 
   const todayLogs = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -40,7 +51,38 @@ export default function FoodLogPage() {
     );
   }, [smartSuggestions, search]);
 
-  const addFood = (name: string, emoji: string) => {
+  const addFood = async (name: string, emoji: string) => {
+    setIsLoading(true);
+    
+    if (backendConnected) {
+      try {
+        const response = await foodLogAPI.add(name, emoji);
+        
+        if (response.success) {
+          const log: FoodLog = {
+            id: response.data.foodLogId.toString(),
+            food: response.data.foodName,
+            emoji: response.data.emoji,
+            timestamp: response.data.loggedAt,
+            category: 'snack',
+          };
+          setFoodLogs(prev => [...prev, log]);
+          setLastAdded(name);
+          setShowSuccess(true);
+        }
+      } catch (error) {
+        console.error('Failed to add food to backend:', error);
+        setBackendConnected(false);
+        addFoodLocally(name, emoji);
+      }
+    } else {
+      addFoodLocally(name, emoji);
+    }
+    
+    setIsLoading(false);
+  };
+
+  const addFoodLocally = (name: string, emoji: string) => {
     const log: FoodLog = {
       id: generateId(),
       food: name,
@@ -66,6 +108,31 @@ export default function FoodLogPage() {
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <ConfettiEffect show={showSuccess} />
+
+      {/* Backend status indicator */}
+      {backendConnected !== null && (
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className={`mb-3 px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-display font-semibold ${
+            backendConnected 
+              ? 'bg-green-500/10 text-green-700 dark:text-green-400' 
+              : 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'
+          }`}
+        >
+          {backendConnected ? (
+            <>
+              <Wifi size={14} />
+              <span>Connected to database</span>
+            </>
+          ) : (
+            <>
+              <WifiOff size={14} />
+              <span>Using local storage (backend offline)</span>
+            </>
+          )}
+        </motion.div>
+      )}
 
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -149,14 +216,15 @@ export default function FoodLogPage() {
                       {item.why}
                     </TooltipContent>
                   </Tooltip>
-                  <motion.button
-                    whileTap={{ scale: 0.92 }}
-                    onClick={() => addFood(item.name, item.emoji)}
-                    className="bg-primary/10 rounded-full p-1"
-                    aria-label={`Add ${item.name}`}
-                  >
-                    <Plus className="text-primary" size={14} />
-                  </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
+                  onClick={() => addFood(item.name, item.emoji)}
+                  disabled={isLoading}
+                  className="bg-primary/10 rounded-full p-1 disabled:opacity-50"
+                  aria-label={`Add ${item.name}`}
+                >
+                  <Plus className="text-primary" size={14} />
+                </motion.button>
                 </div>
               </motion.div>
             ))}
@@ -242,7 +310,8 @@ export default function FoodLogPage() {
                 <motion.button
                   whileTap={{ scale: 0.92 }}
                   onClick={() => addFood(item.name, item.emoji)}
-                  className="bg-primary/10 rounded-full p-1"
+                  disabled={isLoading}
+                  className="bg-primary/10 rounded-full p-1 disabled:opacity-50"
                   aria-label={`Add ${item.name}`}
                 >
                   <Plus className="text-primary" size={16} />
