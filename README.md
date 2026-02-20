@@ -186,7 +186,7 @@ You should see confirmation messages showing:
 
 3. The default configuration should work:
    ```env
-   VITE_API_URL=http://localhost:5000/api
+   VITE_API_URL=http://localhost:5001/api
    ```
 
 ### 4. Install Dependencies
