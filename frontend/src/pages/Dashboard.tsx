@@ -1,19 +1,17 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useData } from '@/context/DataContext';
 import { useStreak } from '@/hooks/useStreak';
 import StreakDisplay from '@/components/StreakDisplay';
 import WeekGraph from '@/components/WeekGraph';
 import FocusPatterns from '@/components/FocusPatterns';
 import { Link } from 'react-router-dom';
 import { UtensilsCrossed, Brain, TrendingUp, X } from 'lucide-react';
-import type { FoodLog, MoodLog } from '@/utils/mockData';
 import type { WeekDay } from '@/utils/mockData';
 import { buildWeekDataFromLogs, brainFacts, getGreeting, formatDate, formatTime } from '@/utils/mockData';
 
 export default function Dashboard() {
-  const [foodLogs] = useLocalStorage<FoodLog[]>('foodLogs', []);
-  const [moodLogs] = useLocalStorage<MoodLog[]>('moodLogs', []);
+  const { foodLogs, moodLogs } = useData();
   const { currentStreak } = useStreak(foodLogs, moodLogs);
   const [factIndex] = useState(() => Math.floor(Math.random() * brainFacts.length));
   const fact = brainFacts[factIndex];
@@ -33,7 +31,6 @@ export default function Dashboard() {
 
   const [selectedDay, setSelectedDay] = useState<WeekDay | null>(null);
 
-  // Get all logs for selected day with timestamps
   const selectedDayLogs = useMemo(() => {
     if (!selectedDay) return { foods: [], moods: [] };
     const dateStr = selectedDay.date;
@@ -48,13 +45,11 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
-      {/* Hero */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
         <h1 className="text-3xl font-display font-black text-foreground">{getGreeting()}</h1>
         <p className="text-muted-foreground font-display font-semibold">{formatDate()}</p>
       </motion.div>
 
-      {/* Streak */}
       <div className="flex items-center gap-3 mb-5">
         <StreakDisplay streak={currentStreak} />
         <motion.div
@@ -71,7 +66,6 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Quick actions */}
       <div className="grid grid-cols-2 gap-3 mb-5">
         <Link to="/food">
           <motion.div
@@ -99,7 +93,6 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {/* Week Graph – real data, colored by mood, tap day for detail */}
       <div className="mb-5">
         <WeekGraph
           data={weekData}
@@ -108,7 +101,6 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Day detail modal (center) - shows all foods and moods with timestamps */}
       <AnimatePresence>
         {selectedDay && (
           <motion.div
@@ -144,7 +136,6 @@ export default function Dashboard() {
                 </button>
               </div>
 
-              {/* Food logs with timestamps */}
               <div className="mb-5">
                 <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wide mb-2">
                   Food logs ({selectedDayLogs.foods.length})
@@ -166,7 +157,6 @@ export default function Dashboard() {
                 )}
               </div>
 
-              {/* Mood logs with timestamps and values */}
               <div>
                 <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wide mb-2">
                   Mood logs ({selectedDayLogs.moods.length})
@@ -216,10 +206,8 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      {/* Focus Patterns (Insight Cards) */}
       <FocusPatterns />
 
-      {/* Brain fact card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -243,7 +231,6 @@ export default function Dashboard() {
         </Link>
       </motion.div>
 
-      {/* Empty state overlay if no logs at all */}
       <AnimatePresence>
         {foodLogs.length === 0 && moodLogs.length === 0 && (
           <motion.div

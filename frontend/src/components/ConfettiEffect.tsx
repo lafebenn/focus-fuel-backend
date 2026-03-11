@@ -11,7 +11,7 @@ interface ConfettiPiece {
 }
 
 const colors = [
-  'hsl(100 98% 40%)',   // green
+  '#007BA7',            // cerulean (brand)
   'hsl(47 100% 50%)',   // yellow
   'hsl(200 92% 54%)',   // blue
   'hsl(35 100% 50%)',   // orange

@@ -1,33 +1,21 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, Check, X, ArrowRight, HelpCircle, Wifi, WifiOff } from 'lucide-react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { generateId, formatTime } from '@/utils/mockData';
+import { Search, Plus, X, ArrowRight, HelpCircle, Wifi, WifiOff } from 'lucide-react';
+import { useData } from '@/context/DataContext';
+import { formatTime } from '@/utils/mockData';
 import { getSmartSuggestions, getSuggestionsFromRecentEats, smartSuggestionTagColorMap } from '@/utils/smartSuggestions';
 import type { SmartSuggestionItem } from '@/utils/smartSuggestions';
-import type { FoodLog, MoodLog } from '@/utils/mockData';
 import { useNavigate } from 'react-router-dom';
 import ConfettiEffect from '@/components/ConfettiEffect';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { foodLogAPI, checkBackendHealth } from '@/api/foodLogAPI';
 
 export default function FoodLogPage() {
-  const [foodLogs, setFoodLogs] = useLocalStorage<FoodLog[]>('foodLogs', []);
-  const [moodLogs] = useLocalStorage<MoodLog[]>('moodLogs', []);
+  const { foodLogs, moodLogs, backendConnected, addFoodLog, removeFoodLog } = useData();
   const [search, setSearch] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastAdded, setLastAdded] = useState('');
-  const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const checkBackend = async () => {
-      const isHealthy = await checkBackendHealth();
-      setBackendConnected(isHealthy);
-    };
-    checkBackend();
-  }, []);
 
   const todayLogs = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
@@ -51,72 +39,31 @@ export default function FoodLogPage() {
     );
   }, [smartSuggestions, search]);
 
-  const addFood = async (name: string, emoji: string) => {
+  const handleAddFood = async (name: string, emoji: string) => {
     setIsLoading(true);
-    
-    if (backendConnected) {
-      try {
-        const response = await foodLogAPI.add(name, emoji);
-        
-        if (response.success) {
-          const log: FoodLog = {
-            id: response.data.foodLogId.toString(),
-            food: response.data.foodName,
-            emoji: response.data.emoji,
-            timestamp: response.data.loggedAt,
-            category: 'snack',
-          };
-          setFoodLogs(prev => [...prev, log]);
-          setLastAdded(name);
-          setShowSuccess(true);
-        }
-      } catch (error) {
-        console.error('Failed to add food to backend:', error);
-        setBackendConnected(false);
-        addFoodLocally(name, emoji);
-      }
-    } else {
-      addFoodLocally(name, emoji);
-    }
-    
-    setIsLoading(false);
-  };
-
-  const addFoodLocally = (name: string, emoji: string) => {
-    const log: FoodLog = {
-      id: generateId(),
-      food: name,
-      emoji,
-      timestamp: new Date().toISOString(),
-      category: 'snack',
-    };
-    setFoodLogs(prev => [...prev, log]);
+    await addFoodLog(name, emoji);
     setLastAdded(name);
     setShowSuccess(true);
+    setIsLoading(false);
   };
 
   const addFromSearch = () => {
     if (!search.trim()) return;
-    addFood(search.trim(), '🍽️');
+    handleAddFood(search.trim(), '🍽️');
     setSearch('');
-  };
-
-  const removeFood = (id: string) => {
-    setFoodLogs(prev => prev.filter(l => l.id !== id));
   };
 
   return (
     <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
       <ConfettiEffect show={showSuccess} />
 
-      {/* Backend status indicator */}
       {backendConnected !== null && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }} 
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           className={`mb-3 px-3 py-2 rounded-lg flex items-center gap-2 text-xs font-display font-semibold ${
-            backendConnected 
-              ? 'bg-green-500/10 text-green-700 dark:text-green-400' 
+            backendConnected
+              ? 'bg-primary/10 text-primary'
               : 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'
           }`}
         >
@@ -134,13 +81,11 @@ export default function FoodLogPage() {
         </motion.div>
       )}
 
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-display font-black text-foreground">What did you eat? 🍽️</h1>
         <p className="text-muted-foreground font-display font-semibold">Every meal matters!</p>
       </motion.div>
 
-      {/* Search */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -158,7 +103,6 @@ export default function FoodLogPage() {
         />
       </motion.div>
 
-      {/* Add custom food when search has no results (above "Added today") */}
       {search && filteredSuggestions.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -181,12 +125,11 @@ export default function FoodLogPage() {
         </motion.div>
       )}
 
-      {/* Top 2 suggestions from recent eats – smaller cards */}
       {topTwoFromRecent.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mt-4">
           <h3 className="text-xs font-display font-bold text-muted-foreground mb-2">Based on your recent eats</h3>
           <div className="grid grid-cols-2 gap-2">
-            {topTwoFromRecent.map((item, i) => (
+            {topTwoFromRecent.map((item: SmartSuggestionItem, i: number) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, scale: 0.96 }}
@@ -204,11 +147,7 @@ export default function FoodLogPage() {
                 <div className="flex items-center gap-0.5 shrink-0">
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="text-muted-foreground hover:text-foreground p-1 rounded-full"
-                        aria-label="Why?"
-                      >
+                      <button type="button" className="text-muted-foreground hover:text-foreground p-1 rounded-full" aria-label="Why?">
                         <HelpCircle size={14} />
                       </button>
                     </TooltipTrigger>
@@ -216,15 +155,15 @@ export default function FoodLogPage() {
                       {item.why}
                     </TooltipContent>
                   </Tooltip>
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  onClick={() => addFood(item.name, item.emoji)}
-                  disabled={isLoading}
-                  className="bg-primary/10 rounded-full p-1 disabled:opacity-50"
-                  aria-label={`Add ${item.name}`}
-                >
-                  <Plus className="text-primary" size={14} />
-                </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => handleAddFood(item.name, item.emoji)}
+                    disabled={isLoading}
+                    className="bg-primary/10 rounded-full p-1 disabled:opacity-50"
+                    aria-label={`Add ${item.name}`}
+                  >
+                    <Plus className="text-primary" size={14} />
+                  </motion.button>
                 </div>
               </motion.div>
             ))}
@@ -232,7 +171,6 @@ export default function FoodLogPage() {
         </motion.div>
       )}
 
-      {/* Today's foods */}
       {todayLogs.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-5">
           <h3 className="text-sm font-display font-bold text-muted-foreground mb-2">
@@ -257,7 +195,7 @@ export default function FoodLogPage() {
                   </div>
                   <motion.button
                     whileTap={{ scale: 0.8 }}
-                    onClick={() => removeFood(log.id)}
+                    onClick={() => removeFoodLog(log.id)}
                     className="text-muted-foreground hover:text-destructive p-1"
                   >
                     <X size={18} />
@@ -276,11 +214,10 @@ export default function FoodLogPage() {
         </motion.div>
       )}
 
-      {/* Smart Recommendations – compact list with Why tooltip + Plus */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-5">
         <h3 className="text-sm font-display font-bold text-muted-foreground mb-3">Smart Recommendations</h3>
         <div className="grid grid-cols-2 gap-2">
-          {filteredSuggestions.map((item, i) => (
+          {filteredSuggestions.map((item: SmartSuggestionItem, i: number) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -309,7 +246,7 @@ export default function FoodLogPage() {
                 </Tooltip>
                 <motion.button
                   whileTap={{ scale: 0.92 }}
-                  onClick={() => addFood(item.name, item.emoji)}
+                  onClick={() => handleAddFood(item.name, item.emoji)}
                   disabled={isLoading}
                   className="bg-primary/10 rounded-full p-1 disabled:opacity-50"
                   aria-label={`Add ${item.name}`}
@@ -322,7 +259,6 @@ export default function FoodLogPage() {
         </div>
       </motion.div>
 
-      {/* Success modal (center, stays until dismissed) */}
       <AnimatePresence>
         {showSuccess && (
           <motion.div
