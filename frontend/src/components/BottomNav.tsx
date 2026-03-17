@@ -27,7 +27,7 @@ export default function BottomNav() {
                 }`}
               >
                 <Icon size={active ? 26 : 22} strokeWidth={active ? 2.5 : 2} />
-                <span className={`text-[11px] font-display ${active ? 'font-bold' : 'font-semibold'}`}>
+                <span className={`text-xs font-display ${active ? 'font-bold' : 'font-semibold'}`}>
                   {label}
                 </span>
               </motion.div>
