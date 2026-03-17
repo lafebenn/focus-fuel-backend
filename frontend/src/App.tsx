@@ -13,6 +13,8 @@ import SettingsPage from "./pages/Settings";
 import TrackProgressPage from "./pages/TrackProgress";
 import NotFound from "./pages/NotFound";
 
+// Jeremy Richards git commit 3-17: tested app and is ready for deployment
+
 const queryClient = new QueryClient();
 
 const App = () => (
