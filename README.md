@@ -1,3 +1,16 @@
+Here are **4 files** you can copy directly into your repo. I only changed what needed fixing and added the new content.
+
+***
+
+## FILE 1: `README.md` (full replacement)
+
+Copy this entire thing and replace your current README.md.
+
+```markdown
+![License: Educational](https://img.shields.io/badge/license-Educational-blue)
+![Node.js](https://img.shields.io/badge/node-%3E=18-green)
+![PostgreSQL](https://img.shields.io/badge/postgresql-16%2B-blue)
+
 # FocusFuel
 
 ## App Summary
@@ -7,6 +20,7 @@ FocusFuel is a food and mood tracking application designed to help users discove
 ## Tech Stack
 
 ### Frontend
+
 - **Framework**: React 18.3 with TypeScript
 - **Build Tool**: Vite 7.3
 - **UI Library**: shadcn/ui components with Radix UI primitives
@@ -17,15 +31,18 @@ FocusFuel is a food and mood tracking application designed to help users discove
 - **Charts**: Recharts 2.15
 
 ### Backend
+
 - **Runtime**: Node.js with Express 4.18
 - **Language**: JavaScript (ES Modules)
 - **API Style**: RESTful API
 
 ### Database
+
 - **Database**: PostgreSQL 16+
 - **Database Driver**: node-postgres (pg) 8.11
 
 ### Development Tools
+
 - **Testing**: Vitest 3.2 with Testing Library
 - **Linting**: ESLint 9.32
 - **Type Checking**: TypeScript 5.8
@@ -49,10 +66,12 @@ FocusFuel is a food and mood tracking application designed to help users discove
          │ HTTP REST API
          ▼
 ┌─────────────────────────────────┐
-│   Backend (Node.js + Express)   │
-│   - /api/foodlogs               │
-│   - /api/health                 │
-│   Port: 5000                    │
+│  Backend (Node.js + Express)    │
+│  - /api/foodlogs                │
+│  - /api/moodlogs                │
+│  - /api/users                   │
+│  - /api/health                  │
+│  Port: 5000                     │
 └────────┬────────────────────────┘
          │ SQL Queries
          ▼
@@ -77,15 +96,15 @@ Before running this project locally, ensure you have the following software inst
    - [Download and install from nodejs.org](https://nodejs.org/)
    - Verify installation:
      ```bash
-     node --version  # Should output v18.x.x or higher
-     npm --version   # Should output 9.x.x or higher
+     node --version     # Should output v18.x.x or higher
+     npm --version      # Should output 9.x.x or higher
      ```
 
 2. **PostgreSQL (v16 or higher)**
    - [Download and install from postgresql.org](https://www.postgresql.org/download/)
    - Verify installation:
      ```bash
-     psql --version  # Should output psql (PostgreSQL) 16.x or higher
+     psql --version     # Should output psql (PostgreSQL) 16.x or higher
      ```
    - **Important**: Ensure `psql` is available in your system PATH
 
@@ -143,6 +162,7 @@ psql -U postgres -d focusfuel_db -f backend/db/seed.sql
 ```
 
 You should see confirmation messages showing:
+
 - 2 users created
 - 8 allergies added
 - ~20 foods added
@@ -153,17 +173,20 @@ You should see confirmation messages showing:
 #### Backend Configuration
 
 1. Navigate to the backend folder:
+
    ```bash
    cd backend
    ```
 
 2. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
 
 3. Edit the `.env` file with your PostgreSQL credentials:
-   ```env
+
+   ```
    DB_HOST=localhost
    DB_PORT=5432
    DB_NAME=focusfuel_db
@@ -175,18 +198,21 @@ You should see confirmation messages showing:
 #### Frontend Configuration
 
 1. Navigate to the frontend folder:
+
    ```bash
    cd ../frontend
    ```
 
 2. Copy the example environment file:
+
    ```bash
    cp .env.example .env
    ```
 
 3. The default configuration should work:
-   ```env
-   VITE_API_URL=http://localhost:5001/api
+
+   ```
+   VITE_API_URL=http://localhost:5000/api
    ```
 
 ### 4. Install Dependencies
@@ -221,6 +247,7 @@ npm run dev
 ```
 
 You should see:
+
 ```
 ✅ Connected to PostgreSQL database
 🚀 Server running on http://localhost:5000
@@ -235,16 +262,19 @@ npm run dev
 ```
 
 You should see:
-```
-VITE v7.3.1  ready in X ms
 
+```
+VITE v7.3.1 ready in X ms
 ➜  Local:   http://localhost:5173/
 ➜  Network: use --host to expose
 ```
 
+**Important**: If your frontend opens on a different port (check your `frontend/vite.config.ts` for the `server.port` setting), update the URL accordingly. The default Vite port is 5173.
+
 ### Access the Application
 
 Open your browser and navigate to:
+
 ```
 http://localhost:5173
 ```
@@ -272,11 +302,7 @@ psql -U postgres -d focusfuel_db
 Run this query:
 
 ```sql
-SELECT 
-  fl.FoodLogID,
-  fl.LoggedAt,
-  f.FoodName,
-  u.Username
+SELECT fl.FoodLogID, fl.LoggedAt, f.FoodName, u.Username
 FROM FoodLogs fl
 JOIN FoodLogItems fli ON fl.FoodLogID = fli.FoodLogID
 JOIN Foods f ON fli.FoodID = f.FoodID
@@ -305,14 +331,16 @@ You should receive a JSON response with your food logs for today.
 
 ### Expected Behavior
 
-✅ **Success Criteria:**
+**Success Criteria:**
+
 - Button click triggers backend API call
 - Backend inserts record into PostgreSQL (FoodLogs + FoodLogItems tables)
 - API returns the new food log data
 - UI displays the food in the "Added today" section with timestamp
 - After page refresh, the food log persists and is still visible
 
-❌ **If Something Goes Wrong:**
+**If Something Goes Wrong:**
+
 - Check that both backend and frontend servers are running
 - Verify PostgreSQL is running: `pg_isready`
 - Check backend logs for errors
@@ -322,9 +350,11 @@ You should receive a JSON response with your food logs for today.
 ## API Endpoints
 
 ### Health Check
-- **GET** `/api/health` - Returns API status
+
+- **GET** `/api/health` - Returns API status and database connection state
 
 ### Food Logs
+
 - **GET** `/api/foodlogs?userId=1` - Get all food logs for a user
 - **GET** `/api/foodlogs/today?userId=1` - Get today's food logs
 - **POST** `/api/foodlogs` - Add a new food log
@@ -337,35 +367,63 @@ You should receive a JSON response with your food logs for today.
   ```
 - **DELETE** `/api/foodlogs/:foodLogId?userId=1` - Delete a food log
 
+### Mood Logs
+
+- **GET** `/api/moodlogs?userId=1` - Get all mood logs for a user
+- **GET** `/api/moodlogs/today?userId=1` - Get today's mood logs
+- **POST** `/api/moodlogs` - Add a new mood log
+  ```json
+  {
+    "userId": 1,
+    "energy": 7,
+    "focus": 6,
+    "clarity": 8,
+    "stress": 3
+  }
+  ```
+- **DELETE** `/api/moodlogs/:mentalLogId?userId=1` - Delete a mood log
+
+### Users
+
+- **GET** `/api/users/:userId/settings` - Get user settings and preferences
+- **PUT** `/api/users/:userId/settings` - Update user settings
+
 ## Project Structure
 
 ```
-focus-fuel-main/
-├── frontend/                 # React frontend application
+focus-fuel-backend/
+├── frontend/                  # React frontend application
 │   ├── src/
-│   │   ├── api/             # API integration layer
-│   │   ├── components/      # Reusable UI components
-│   │   ├── pages/           # Page components
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── utils/           # Helper functions
-│   │   └── lib/             # Third-party configurations
-│   ├── public/              # Static assets
+│   │   ├── api/               # API integration layer (foodLogAPI.ts, moodLogAPI.ts, userAPI.ts)
+│   │   ├── components/        # Reusable UI components + shadcn/ui
+│   │   ├── context/           # React context providers
+│   │   ├── hooks/             # Custom React hooks
+│   │   ├── lib/               # Third-party configurations
+│   │   ├── pages/             # Page components (Dashboard, FoodLog, MoodLog, Settings, Suggestions, TrackProgress)
+│   │   ├── utils/             # Helper functions
+│   │   └── test/              # Test files
+│   ├── public/                # Static assets
+│   ├── .env.example           # Environment variable template
 │   ├── package.json
 │   └── vite.config.ts
-├── backend/                  # Node.js/Express backend
+├── backend/                   # Node.js/Express backend
 │   ├── src/
-│   │   ├── controllers/     # Request handlers
-│   │   ├── routes/          # API route definitions
-│   │   ├── config/          # Configuration files
-│   │   └── server.js        # Express app entry point
+│   │   ├── controllers/       # Request handlers (foodLog, moodLog, user)
+│   │   ├── routes/            # API route definitions
+│   │   ├── config/            # Database configuration
+│   │   └── server.js          # Express app entry point
 │   ├── db/
-│   │   ├── schema.sql       # Database schema (7 tables)
-│   │   └── seed.sql         # Sample data
-│   ├── .env.example         # Environment template
+│   │   ├── schema.sql         # Database schema (7 tables)
+│   │   ├── seed.sql           # Sample data
+│   │   └── verify_queries.sql # Verification queries
+│   ├── .env.example           # Environment variable template
 │   └── package.json
 ├── .gitignore
-├── DESIGN.md                 # Design documentation
-└── README.md                 # This file
+├── DESIGN.md                  # Design and behavior documentation
+├── QUICKSTART.md              # Rapid setup guide
+├── IMPLEMENTATION_SUMMARY.md  # Implementation completion summary
+├── GRADING_CHECKLIST.md       # Grading verification checklist
+└── README.md                  # This file
 ```
 
 ## Database Schema
@@ -385,29 +443,95 @@ See `backend/db/schema.sql` for the complete schema definition.
 ## Troubleshooting
 
 ### Backend won't start
+
 - Ensure PostgreSQL is running: `pg_isready`
 - Check your `.env` file credentials
 - Verify port 5000 is not in use: `lsof -i :5000`
 
 ### Database connection errors
+
 - Confirm database exists: `psql -U postgres -l | grep focusfuel_db`
 - Check PostgreSQL is accepting connections
 - Verify username and password in `.env`
 
 ### Frontend shows "Using local storage"
+
 - Check that backend is running on port 5000
 - Verify `VITE_API_URL` in frontend `.env`
 - Check browser console for CORS or network errors
 
 ### CORS errors in browser
+
 - Ensure backend has CORS enabled (already configured in `server.js`)
-- Check that you're accessing frontend via `localhost:5173`
+- Check that you're accessing frontend via `localhost:5173` (or the port specified in `vite.config.ts`)
+
+### Frontend doesn't load on port 5173
+
+- Check `frontend/vite.config.ts` — the `server.port` setting may be configured to a different port (e.g., 8080)
+- Navigate to the port shown in the terminal output after running `npm run dev`
 
 ## Team
 
-- **Repository**: https://github.com/lafebenn/focus-fuel-backend
+- **Repository**: [https://github.com/lafebenn/focus-fuel-backend](https://github.com/lafebenn/focus-fuel-backend)
 - **Collaborators**: Add your team members here
+
+## Contributing
+
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines on branching, commits, and code reviews.
+
+## Changelog
+
+See [CHANGELOG.md](./CHANGELOG.md) for version history.
 
 ## License
 
 This project is for educational purposes as part of IS 401.
+```
+
+***
+
+## FILE 2: `CHANGELOG.md` (new file)
+
+```markdown
+# Changelog
+
+All notable changes to the FocusFuel project will be documented in this file.
+
+## [Unreleased]
+
+### Planned
+- Add Docker Compose setup for one-command environment setup
+- Add user authentication with JWT
+- Add AI-powered custom food analysis (opt-in)
+- Add data export (CSV/JSON) in Settings
+- Add weekly email summaries
+
+## [1.0.0] - 2026-03
+
+### Added
+- Full PERN stack application (PostgreSQL, Express, React, Node.js)
+- 7-table database schema with ERD-compliant design
+- Food logging vertical slice (GET, POST, DELETE)
+- Mood logging API and UI
+- User settings management
+- Food suggestions page with filtering by Energy, Focus, and Mood
+- Week graph with mood-based coloring and day detail modals
+- Track Progress page with 30-day trends, food frequency, and correlation insights
+- Settings page with custom reminder schedules and allergy management
+- Dashboard with quick actions and today's summary
+- Streak tracking display
+- Confetti celebration effect on successful food logs
+- Focus patterns component on dashboard
+
+### Backend
+- Express server with CORS and error handling
+- PostgreSQL connection pool with dotenv configuration
+- RESTful API routes for food logs, mood logs, and user settings
+- Health check endpoint with database connectivity verification
+- Database transaction handling for food log operations
+- Parameterized queries for SQL injection prevention
+
+### Frontend
+- React 18.3 + TypeScript with Vite 7.3
+- shadcn/ui component library with Radix UI primitives
+- Tailwind CSS 3.

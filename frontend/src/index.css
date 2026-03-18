@@ -13,20 +13,26 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 24%;
 
-    --primary: 100 98% 40%;
+    /* Brand: Cerulean monochromatic palette */
+    --primary: 196 100% 33%; /* #007BA7 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 82 82% 49%;
-    --secondary-foreground: 0 0% 100%;
+    /* Soft tint used for tracks/secondary surfaces */
+    --secondary: 196 60% 92%;
+    --secondary-foreground: 196 100% 20%;
 
     --muted: 0 0% 94%;
     --muted-foreground: 0 0% 47%;
 
-    --accent: 200 92% 54%;
+    /* Brighter Cerulean accent from screenshot (~#0194C8) */
+    --accent: 196 99% 39%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 100% 65%;
     --destructive-foreground: 0 0% 100%;
+
+    --success: 142 72% 38%;
+    --success-foreground: 0 0% 100%;
 
     --warning: 35 100% 50%;
     --warning-foreground: 0 0% 100%;
@@ -36,7 +42,7 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 100 98% 40%;
+    --ring: 196 100% 33%;
 
     --radius: 1rem;
 
@@ -52,7 +58,9 @@
     /* Custom gradients and shadows */
     --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.08);
     --shadow-card-hover: 0 8px 24px -4px hsl(0 0% 0% / 0.12);
-    --shadow-button: 0 4px 0 0 hsl(100 98% 30%);
+    /* Darker Cerulean from screenshot (~#006287) */
+    --primary-shadow: 196 100% 26%;
+    --shadow-button: 0 4px 0 0 hsl(var(--primary-shadow));
   }
 
   .dark {
@@ -62,23 +70,26 @@
     --card-foreground: 0 0% 95%;
     --popover: 220 20% 14%;
     --popover-foreground: 0 0% 95%;
-    --primary: 100 98% 40%;
+    /* Slightly brighter in dark mode for contrast */
+    --primary: 196 99% 39%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 82 82% 49%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 196 35% 18%;
+    --secondary-foreground: 0 0% 98%;
     --muted: 220 15% 20%;
     --muted-foreground: 0 0% 65%;
-    --accent: 200 92% 54%;
+    --accent: 196 95% 32%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 65%;
     --destructive-foreground: 0 0% 100%;
+    --success: 142 70% 45%;
+    --success-foreground: 0 0% 100%;
     --warning: 35 100% 50%;
     --warning-foreground: 0 0% 100%;
     --streak: 47 100% 50%;
     --streak-foreground: 0 0% 24%;
     --border: 220 15% 22%;
     --input: 220 15% 22%;
-    --ring: 100 98% 40%;
+    --ring: 196 99% 39%;
   }
 }
 

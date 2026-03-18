@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import type { WeekDay } from '@/utils/mockData';
+import { scoreStatus, statusBgClass } from '@/utils/scoreColor';
 
 interface WeekGraphProps {
   data: WeekDay[];
@@ -12,9 +13,7 @@ function getDayCircleClass(d: WeekDay): string {
   if (!d.completed && d.avgMood === 0) {
     return 'bg-muted text-muted-foreground';
   }
-  if (d.avgMood >= 7) return 'bg-primary text-primary-foreground';
-  if (d.avgMood >= 4) return 'bg-warning/90 text-warning-foreground';
-  return 'bg-destructive/90 text-destructive-foreground';
+  return statusBgClass(scoreStatus(d.avgMood));
 }
 
 export default function WeekGraph({ data, selectedDay, onDayClick }: WeekGraphProps) {
