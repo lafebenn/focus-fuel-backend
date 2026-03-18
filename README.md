@@ -1,12 +1,3 @@
-Here are **4 files** you can copy directly into your repo. I only changed what needed fixing and added the new content.
-
-***
-
-## FILE 1: `README.md`
-
-Copy this entire thing and replace your current README.md.
-
-```markdown
 ![License: Educational](https://img.shields.io/badge/license-Educational-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E=18-green)
 ![PostgreSQL](https://img.shields.io/badge/postgresql-16%2B-blue)
@@ -18,21 +9,18 @@ Copy this entire thing and replace your current README.md.
 ### Complete
 1. The system shall allow users to log food entries.
 2. The system shall allow users to log mood and mental state data.
-3. While the backend and database are connected, the system shall display connected data in the application.
-4. The system shall provide dashboard summaries, progress tracking, and recommendations based on stored user data.
-5. The system shall allow users to manage personal settings and allergy preferences.
+3. When a user submits a food entry, the system shall store the data in PostgreSQL and display it in the interface.
+4. When a user submits a mood log, the system shall store the data and make it available for dashboard summaries and progress tracking.
+5. While the backend and database are connected, the system shall display connected data in the application.
+6. The system shall provide dashboard summaries, progress tracking, and recommendations based on stored user data.
+7. The system shall allow users to manage personal settings and allergy preferences.
 
 ### Not Complete
 1. The system shall provide user authentication and secure login.
 2. The system shall support Docker Compose for one-command local setup.
 3. The system shall send weekly summary updates to users.
-4. When a user submits a food entry, the system shall store the data in PostgreSQL and display it in the interface.
-5. When a user submits a mood log, the system shall store the data and make it available for dashboard summaries and progress tracking.
-6. While the backend and database are connected, the system shall display connected data in the application.
-
-## App Summary
-
-FocusFuel is a food and mood tracking application designed to help users discover personalized nutrition patterns that improve their mental performance. The primary user is anyone looking to optimize their focus, energy, and mental clarity through better understanding of how their diet affects their cognitive function. The app allows users to log their meals and snacks throughout the day, track their mental state (clarity, energy, stress, focus), and receive intelligent suggestions based on detected correlations. Over time, FocusFuel analyzes patterns to provide personalized food recommendations that align with the user's mental performance goals, making it easier to make informed dietary choices that support productivity and well-being.
+4. The system shall allow users to export their data in CSV or JSON format.
+5. The system shall provide AI-powered custom food analysis.
 
 ## App Summary
 
