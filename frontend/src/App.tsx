@@ -20,11 +20,12 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <DataProvider>
-        <Toaster />
-        <Sonner position="top-center" toastOptions={{ className: 'font-display' }} />
-        <BrowserRouter>
-          <div className="max-w-md mx-auto min-h-screen relative">
+      <Toaster />
+      <Sonner position="top-center" toastOptions={{ className: 'font-display' }} />
+      <BrowserRouter>
+        <div className="min-h-screen lg:flex">
+          <BottomNav />
+          <main className="flex-1 lg:ml-56 min-w-0">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/food" element={<FoodLogPage />} />
@@ -34,10 +35,9 @@ const App = () => (
               <Route path="/progress" element={<TrackProgressPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <BottomNav />
-          </div>
-        </BrowserRouter>
-      </DataProvider>
+          </main>
+        </div>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

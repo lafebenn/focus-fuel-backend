@@ -77,7 +77,7 @@ export default function MoodLogPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
       <AnimatePresence mode="wait">
@@ -97,9 +97,14 @@ export default function MoodLogPage() {
                   transition={{ delay: 0.1 * i }}
                   className="bg-card rounded-2xl p-4 card-shadow"
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <label
+                    htmlFor={`mood-${s.key}`}
+                    className="flex items-center justify-between mb-3 cursor-pointer"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{s.icon}</span>
+                      <span className="text-xl" aria-hidden="true">
+                        {s.icon}
+                      </span>
                       <span className="font-display font-bold text-foreground">{s.label}</span>
                     </div>
                     <motion.span
@@ -110,21 +115,37 @@ export default function MoodLogPage() {
                     >
                       {values[s.key]}
                     </motion.span>
-                  </div>
+                  </label>
                   <input
                     type="range"
                     min={0}
                     max={10}
                     value={values[s.key]}
                     onChange={e => handleSlider(s.key, parseInt(e.target.value))}
+                    id={`mood-${s.key}`}
+                    aria-label={s.label}
+                    aria-valuemin={0}
+                    aria-valuemax={10}
+                    aria-valuenow={values[s.key]}
+                    aria-describedby={`mood-${s.key}-low mood-${s.key}-high`}
                     className="w-full h-3 rounded-full appearance-none cursor-pointer accent-primary bg-muted"
                     style={{
                       background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${values[s.key] * 10}%, hsl(var(--muted)) ${values[s.key] * 10}%, hsl(var(--muted)) 100%)`,
                     }}
                   />
                   <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-muted-foreground font-display">{s.lowLabel}</span>
-                    <span className="text-[11px] text-muted-foreground font-display">{s.highLabel}</span>
+                    <span
+                      id={`mood-${s.key}-low`}
+                      className="text-xs text-muted-foreground font-display"
+                    >
+                      {s.lowLabel}
+                    </span>
+                    <span
+                      id={`mood-${s.key}-high`}
+                      className="text-xs text-muted-foreground font-display"
+                    >
+                      {s.highLabel}
+                    </span>
                   </div>
                 </motion.div>
               ))}

@@ -54,7 +54,7 @@ export default function FoodLogPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
       {backendConnected !== null && (
@@ -128,8 +128,8 @@ export default function FoodLogPage() {
       {topTwoFromRecent.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mt-4">
           <h3 className="text-xs font-display font-bold text-muted-foreground mb-2">Based on your recent eats</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {topTwoFromRecent.map((item: SmartSuggestionItem, i: number) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            {topTwoFromRecent.map((item, i) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, scale: 0.96 }}
@@ -216,8 +216,8 @@ export default function FoodLogPage() {
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-5">
         <h3 className="text-sm font-display font-bold text-muted-foreground mb-3">Smart Recommendations</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {filteredSuggestions.map((item: SmartSuggestionItem, i: number) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          {filteredSuggestions.map((item, i) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, scale: 0.9 }}
