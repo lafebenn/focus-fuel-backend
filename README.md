@@ -18,18 +18,17 @@ Copy this entire thing and replace your current README.md.
 ### Complete
 1. The system shall allow users to log food entries.
 2. The system shall allow users to log mood and mental state data.
-3. When a user submits a food entry, the system shall store the data in PostgreSQL and display it in the interface.
-4. When a user submits a mood log, the system shall store the data and make it available for dashboard summaries and progress tracking.
-5. While the backend and database are connected, the system shall display connected data in the application.
-6. The system shall provide dashboard summaries, progress tracking, and recommendations based on stored user data.
-7. The system shall allow users to manage personal settings and allergy preferences.
+3. While the backend and database are connected, the system shall display connected data in the application.
+4. The system shall provide dashboard summaries, progress tracking, and recommendations based on stored user data.
+5. The system shall allow users to manage personal settings and allergy preferences.
 
 ### Not Complete
 1. The system shall provide user authentication and secure login.
 2. The system shall support Docker Compose for one-command local setup.
-3. The system shall allow users to export their data in CSV or JSON format.
-4. The system shall send weekly summary updates to users.
-5. The system shall provide AI-powered custom food analysis.
+3. The system shall send weekly summary updates to users.
+4. When a user submits a food entry, the system shall store the data in PostgreSQL and display it in the interface.
+5. When a user submits a mood log, the system shall store the data and make it available for dashboard summaries and progress tracking.
+6. While the backend and database are connected, the system shall display connected data in the application.
 
 ## App Summary
 
