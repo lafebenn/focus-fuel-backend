@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
-import { generateId } from '@/utils/mockData';
+import { useData } from '@/context/DataContext';
 import type { MoodLog } from '@/utils/mockData';
 import { useNavigate } from 'react-router-dom';
 import ConfettiEffect from '@/components/ConfettiEffect';
@@ -51,11 +50,12 @@ const sliders: SliderConfig[] = [
 ];
 
 export default function MoodLogPage() {
-  const [, setMoodLogs] = useLocalStorage<MoodLog[]>('moodLogs', []);
+  const { addMoodLog } = useData();
   const [values, setValues] = useState({ clarity: 5, energy: 5, stress: 5, focus: 5 });
   const [note, setNote] = useState('');
   const [touched, setTouched] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
   const handleSlider = (key: string, val: number) => {
@@ -63,15 +63,12 @@ export default function MoodLogPage() {
     setTouched(true);
   };
 
-  const submit = () => {
-    const log: MoodLog = {
-      id: generateId(),
-      timestamp: new Date().toISOString(),
-      ...values,
-      note: note || undefined,
-    };
-    setMoodLogs(prev => [...prev, log]);
+  const submit = async () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    await addMoodLog({ ...values, note: note || undefined });
     setShowSuccess(true);
+    setIsSubmitting(false);
   };
 
   const closeSuccessAndNavigate = () => {
@@ -86,13 +83,11 @@ export default function MoodLogPage() {
       <AnimatePresence mode="wait">
         {!showSuccess && (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {/* Header */}
             <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
               <h1 className="text-3xl font-display font-black text-foreground">How are you feeling? 🧠</h1>
               <p className="text-muted-foreground font-display font-semibold">Be honest with yourself</p>
             </motion.div>
 
-            {/* Sliders */}
             <div className="mt-5 space-y-4">
               {sliders.map((s, i) => (
                 <motion.div
@@ -156,7 +151,6 @@ export default function MoodLogPage() {
               ))}
             </div>
 
-            {/* Note */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -178,27 +172,25 @@ export default function MoodLogPage() {
               </details>
             </motion.div>
 
-            {/* Submit */}
             <motion.button
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
               whileTap={{ scale: 0.95 }}
               onClick={submit}
-              disabled={!touched}
+              disabled={!touched || isSubmitting}
               className={`mt-5 w-full font-display font-bold py-4 rounded-2xl text-lg flex items-center justify-center gap-2 transition-colors ${
                 touched
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground cursor-not-allowed'
               }`}
             >
-              Submit ✓
+              {isSubmitting ? 'Saving...' : 'Submit ✓'}
             </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Success modal (center, stays until dismissed) */}
       <AnimatePresence>
         {showSuccess && (
           <motion.div

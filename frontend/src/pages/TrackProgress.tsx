@@ -1,17 +1,16 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useData } from '@/context/DataContext';
 import { calculateCorrelations } from '@/utils/calculateCorrelations';
-import type { FoodLog, MoodLog } from '@/utils/mockData';
 import { formatTime } from '@/utils/mockData';
+import { scoreStatus, statusTextClass } from '@/utils/scoreColor';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, Activity, Calendar, UtensilsCrossed, Brain } from 'lucide-react';
 
 type ViewMode = 'charts' | 'recent' | 'stats';
 
 export default function TrackProgressPage() {
-  const [foodLogs] = useLocalStorage<FoodLog[]>('foodLogs', []);
-  const [moodLogs] = useLocalStorage<MoodLog[]>('moodLogs', []);
+  const { foodLogs, moodLogs } = useData();
   const [viewMode, setViewMode] = useState<ViewMode>('charts');
 
   // Last 30 days trend data
@@ -80,6 +79,23 @@ export default function TrackProgressPage() {
       totalLogs: moodLogs.length,
     };
   }, [moodLogs]);
+
+  const overallAverageClasses = useMemo(() => {
+    if (!stats) return null;
+    const energy = Number(stats.avgEnergy);
+    const focus = Number(stats.avgFocus);
+    const clarity = Number(stats.avgClarity);
+    const stress = Number(stats.avgStress);
+
+    return {
+      energy: statusTextClass(scoreStatus(energy)),
+      focus: statusTextClass(scoreStatus(focus)),
+      clarity: statusTextClass(scoreStatus(clarity)),
+      stress: statusTextClass(scoreStatus(stress, { invert: true })),
+      bestMood: statusTextClass(scoreStatus(Number(stats.bestMood))),
+      worstMood: statusTextClass(scoreStatus(Number(stats.worstMood))),
+    };
+  }, [stats]);
 
   const insights = useMemo(() => calculateCorrelations(foodLogs, moodLogs), [foodLogs, moodLogs]);
   const recentFoods = useMemo(() => [...foodLogs].reverse().slice(0, 20), [foodLogs]);
@@ -344,19 +360,19 @@ export default function TrackProgressPage() {
                 <h3 className="text-sm font-display font-bold text-foreground mb-4">Overall Averages</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="text-center">
-                    <p className="text-3xl font-display font-black text-primary">{stats.avgEnergy}</p>
+                    <p className={`text-3xl font-display font-black ${overallAverageClasses?.energy ?? 'text-foreground'}`}>{stats.avgEnergy}</p>
                     <p className="text-xs text-muted-foreground font-display">Energy</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-3xl font-display font-black text-warning">{stats.avgFocus}</p>
+                    <p className={`text-3xl font-display font-black ${overallAverageClasses?.focus ?? 'text-foreground'}`}>{stats.avgFocus}</p>
                     <p className="text-xs text-muted-foreground font-display">Focus</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-3xl font-display font-black text-accent">{stats.avgClarity}</p>
+                    <p className={`text-3xl font-display font-black ${overallAverageClasses?.clarity ?? 'text-foreground'}`}>{stats.avgClarity}</p>
                     <p className="text-xs text-muted-foreground font-display">Clarity</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-3xl font-display font-black text-destructive">{stats.avgStress}</p>
+                    <p className={`text-3xl font-display font-black ${overallAverageClasses?.stress ?? 'text-foreground'}`}>{stats.avgStress}</p>
                     <p className="text-xs text-muted-foreground font-display">Stress</p>
                   </div>
                 </div>
@@ -371,12 +387,12 @@ export default function TrackProgressPage() {
               >
                 <div className="bg-card rounded-2xl p-4 card-shadow text-center">
                   <TrendingUp className="text-streak mx-auto mb-2" size={24} />
-                  <p className="text-2xl font-display font-black text-foreground">{stats.bestMood}</p>
+                  <p className={`text-2xl font-display font-black ${overallAverageClasses?.bestMood ?? 'text-foreground'}`}>{stats.bestMood}</p>
                   <p className="text-xs text-muted-foreground font-display">Best mood</p>
                 </div>
                 <div className="bg-card rounded-2xl p-4 card-shadow text-center">
                   <TrendingDown className="text-muted-foreground mx-auto mb-2" size={24} />
-                  <p className="text-2xl font-display font-black text-foreground">{stats.worstMood}</p>
+                  <p className={`text-2xl font-display font-black ${overallAverageClasses?.worstMood ?? 'text-foreground'}`}>{stats.worstMood}</p>
                   <p className="text-xs text-muted-foreground font-display">Worst mood</p>
                 </div>
               </motion.div>

@@ -2,10 +2,10 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, BookmarkPlus, Check } from 'lucide-react';
 import { foodSuggestions } from '@/utils/mockData';
-import type { FoodSuggestion } from '@/utils/mockData';
+import type { FoodSuggestion, UserSettings } from '@/utils/mockData';
+import { defaultSettings } from '@/utils/mockData';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
-import type { FoodLog, UserSettings } from '@/utils/mockData';
-import { generateId, defaultSettings } from '@/utils/mockData';
+import { useData } from '@/context/DataContext';
 import ConfettiEffect from '@/components/ConfettiEffect';
 
 const filters = ['All', 'Energy ⚡', 'Focus 🎯', 'Mood 😌'];
@@ -22,19 +22,16 @@ export default function SuggestionsPage() {
   const [activeFilter, setActiveFilter] = useState('All');
   const [selectedItem, setSelectedItem] = useState<FoodSuggestion | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [, setFoodLogs] = useLocalStorage<FoodLog[]>('foodLogs', []);
+  const { addFoodLog } = useData();
   const [settings] = useLocalStorage<UserSettings>('userSettings', defaultSettings);
 
   const filtered = useMemo(() => {
     let items = foodSuggestions;
-    // Filter by search
     if (search) items = items.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));
-    // Filter by tag (any tag matches)
     if (activeFilter !== 'All') {
       const filterKey = activeFilter.split(' ')[0].toLowerCase();
       items = items.filter(i => i.benefitTags.some(tag => tag.toLowerCase().includes(filterKey)));
     }
-    // Filter out allergens
     const allAllergies = [...settings.allergies, ...(settings.customAllergies || [])];
     if (allAllergies.length > 0) {
       items = items.filter(i => {
@@ -45,15 +42,8 @@ export default function SuggestionsPage() {
     return items;
   }, [search, activeFilter, settings.allergies, settings.customAllergies]);
 
-  const logSuggestion = (item: FoodSuggestion) => {
-    const log: FoodLog = {
-      id: generateId(),
-      food: item.name,
-      emoji: item.emoji,
-      timestamp: new Date().toISOString(),
-      category: 'snack',
-    };
-    setFoodLogs(prev => [...prev, log]);
+  const logSuggestion = async (item: FoodSuggestion) => {
+    await addFoodLog(item.name, item.emoji);
     setShowSuccess(true);
     setSelectedItem(null);
     setTimeout(() => setShowSuccess(false), 2000);

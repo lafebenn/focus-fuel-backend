@@ -1,12 +1,10 @@
 import { motion } from 'framer-motion';
 import { AlertTriangle, Brain } from 'lucide-react';
-import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useData } from '@/context/DataContext';
 import { calculateCorrelations } from '@/utils/calculateCorrelations';
-import type { FoodLog, MoodLog } from '@/utils/mockData';
 
 export default function FocusPatterns() {
-  const [foodLogs] = useLocalStorage<FoodLog[]>('foodLogs', []);
-  const [moodLogs] = useLocalStorage<MoodLog[]>('moodLogs', []);
+  const { foodLogs, moodLogs } = useData();
   const insights = calculateCorrelations(foodLogs, moodLogs);
   const hasEnoughData = foodLogs.length >= 3 && moodLogs.length >= 3;
 

@@ -1,10 +1,12 @@
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Clock, ShieldAlert, User, MessageSquare, Star, X, Plus } from 'lucide-react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { defaultSettings, allergyOptions } from '@/utils/mockData';
 import type { UserSettings } from '@/utils/mockData';
-import { useState } from 'react';
 import { toast } from 'sonner';
+import { userAPI } from '@/api/userAPI';
+import { checkBackendHealth } from '@/api/foodLogAPI';
 
 const frequencies = [
   { value: 'daily' as const, label: 'Daily' },
@@ -16,9 +18,46 @@ export default function SettingsPage() {
   const [showCustomModal, setShowCustomModal] = useState(false);
   const [customTimes, setCustomTimes] = useState<string[]>(settings.customReminderTimes || ['09:00', '19:00']);
   const [newAllergy, setNewAllergy] = useState('');
+  const [backendUp, setBackendUp] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const ok = await checkBackendHealth();
+      setBackendUp(ok);
+      if (ok) {
+        try {
+          const res = await userAPI.getSettings();
+          if (res.success) {
+            setSettings(prev => ({
+              ...prev,
+              notifications: res.data.notifications,
+              reminderFrequency: res.data.reminderFrequency === 'custom' ? 'custom' : 'daily',
+              reminderTime: res.data.reminderTime || prev.reminderTime,
+              allergies: res.data.allergies ?? prev.allergies,
+            }));
+          }
+        } catch { /* keep local */ }
+      }
+    })();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const syncToBackend = async (patch: Partial<UserSettings>) => {
+    if (!backendUp) return;
+    try {
+      const allAllergies = [...(patch.allergies ?? settings.allergies), ...(patch.customAllergies ?? settings.customAllergies ?? [])];
+      await userAPI.updateSettings({
+        notifications: patch.notifications ?? settings.notifications,
+        reminderFrequency: patch.reminderFrequency ?? settings.reminderFrequency,
+        reminderTime: patch.reminderTime ?? settings.reminderTime,
+        allergies: allAllergies,
+      });
+    } catch { /* non-blocking */ }
+  };
 
   const toggleNotification = () => {
-    setSettings(prev => ({ ...prev, notifications: !prev.notifications }));
+    const next = !settings.notifications;
+    setSettings(prev => ({ ...prev, notifications: next }));
+    syncToBackend({ notifications: next });
     toast.success('Settings saved! ✓');
   };
 
@@ -27,6 +66,7 @@ export default function SettingsPage() {
       setShowCustomModal(true);
     } else {
       setSettings(prev => ({ ...prev, reminderFrequency: freq }));
+      syncToBackend({ reminderFrequency: freq });
       toast.success('Settings saved! ✓');
     }
   };
@@ -37,6 +77,7 @@ export default function SettingsPage() {
       reminderFrequency: 'custom',
       customReminderTimes: customTimes,
     }));
+    syncToBackend({ reminderFrequency: 'custom', reminderTime: customTimes[0] });
     setShowCustomModal(false);
     toast.success('Custom schedule saved! ✓');
   };
@@ -56,12 +97,11 @@ export default function SettingsPage() {
   };
 
   const toggleAllergy = (allergy: string) => {
-    setSettings(prev => ({
-      ...prev,
-      allergies: prev.allergies.includes(allergy)
-        ? prev.allergies.filter(a => a !== allergy)
-        : [...prev.allergies, allergy],
-    }));
+    const updated = settings.allergies.includes(allergy)
+      ? settings.allergies.filter(a => a !== allergy)
+      : [...settings.allergies, allergy];
+    setSettings(prev => ({ ...prev, allergies: updated }));
+    syncToBackend({ allergies: updated });
     toast.success('Settings saved! ✓');
   };
 
@@ -69,19 +109,17 @@ export default function SettingsPage() {
     if (!newAllergy.trim()) return;
     const customAllergyList = settings.customAllergies || [];
     if (customAllergyList.includes(newAllergy.trim())) return;
-    setSettings(prev => ({
-      ...prev,
-      customAllergies: [...(prev.customAllergies || []), newAllergy.trim()],
-    }));
+    const updated = [...customAllergyList, newAllergy.trim()];
+    setSettings(prev => ({ ...prev, customAllergies: updated }));
+    syncToBackend({ customAllergies: updated });
     setNewAllergy('');
     toast.success('Allergy added! ✓');
   };
 
   const removeCustomAllergy = (allergy: string) => {
-    setSettings(prev => ({
-      ...prev,
-      customAllergies: (prev.customAllergies || []).filter(a => a !== allergy),
-    }));
+    const updated = (settings.customAllergies || []).filter(a => a !== allergy);
+    setSettings(prev => ({ ...prev, customAllergies: updated }));
+    syncToBackend({ customAllergies: updated });
     toast.success('Allergy removed! ✓');
   };
 
@@ -158,6 +196,7 @@ export default function SettingsPage() {
                 value={settings.reminderTime}
                 onChange={e => {
                   setSettings(prev => ({ ...prev, reminderTime: e.target.value }));
+                  syncToBackend({ reminderTime: e.target.value });
                   toast.success('Settings saved! ✓');
                 }}
                 className="bg-muted rounded-xl px-3 py-2 font-display font-semibold text-foreground text-sm border-none outline-none"
@@ -187,7 +226,7 @@ export default function SettingsPage() {
           className="bg-card rounded-2xl p-5 card-shadow"
         >
           <div className="flex items-center gap-3 mb-3">
-            <ShieldAlert className="text-destructive" size={22} />
+            <ShieldAlert className="text-primary" size={22} />
             <p className="font-display font-bold text-foreground">Allergies & Preferences</p>
           </div>
           <div className="flex flex-wrap gap-2 mb-3">
@@ -199,7 +238,9 @@ export default function SettingsPage() {
                   whileTap={{ scale: 0.9 }}
                   onClick={() => toggleAllergy(allergy)}
                   className={`px-4 py-2 rounded-xl font-display font-bold text-sm transition-colors ${
-                    active ? 'bg-destructive text-destructive-foreground' : 'bg-muted text-foreground'
+                    active
+                      ? 'bg-secondary text-secondary-foreground ring-1 ring-primary/25'
+                      : 'bg-muted text-foreground hover:bg-secondary/60'
                   }`}
                 >
                   {active && '✓ '}{allergy}
@@ -207,13 +248,12 @@ export default function SettingsPage() {
               );
             })}
           </div>
-          {/* Custom allergies */}
           {settings.customAllergies && settings.customAllergies.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-3">
               {settings.customAllergies.map(allergy => (
                 <div
                   key={allergy}
-                  className="px-3 py-1.5 rounded-xl bg-destructive/20 text-destructive font-display font-bold text-sm flex items-center gap-2"
+                  className="px-3 py-1.5 rounded-xl bg-secondary text-secondary-foreground ring-1 ring-primary/25 font-display font-bold text-sm flex items-center gap-2"
                 >
                   {allergy}
                   <button onClick={() => removeCustomAllergy(allergy)} className="hover:opacity-70">
@@ -285,7 +325,7 @@ export default function SettingsPage() {
         </motion.div>
       </div>
 
-      {/* Custom reminder modal (center of screen) */}
+      {/* Custom reminder modal */}
       <AnimatePresence>
         {showCustomModal && (
           <motion.div
