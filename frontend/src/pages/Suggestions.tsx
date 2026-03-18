@@ -50,7 +50,7 @@ export default function SuggestionsPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
       {/* Header */}

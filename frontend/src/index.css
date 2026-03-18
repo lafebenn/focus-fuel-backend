@@ -5,7 +5,8 @@
 @layer base {
   :root {
     --background: 0 0% 97%;
-    --foreground: 0 0% 24%;
+    /* Darker foreground for better contrast against light background */
+    --foreground: 0 0% 15%;
 
     --card: 0 0% 100%;
     --card-foreground: 0 0% 24%;
@@ -22,7 +23,8 @@
     --secondary-foreground: 196 100% 20%;
 
     --muted: 0 0% 94%;
-    --muted-foreground: 0 0% 47%;
+    /* Darker muted-foreground to improve contrast, especially on small text */
+    --muted-foreground: 0 0% 30%;
 
     /* Brighter Cerulean accent from screenshot (~#0194C8) */
     --accent: 196 99% 39%;
@@ -76,8 +78,9 @@
     --secondary: 196 35% 18%;
     --secondary-foreground: 0 0% 98%;
     --muted: 220 15% 20%;
-    --muted-foreground: 0 0% 65%;
-    --accent: 196 95% 32%;
+    /* Slightly brighter muted-foreground in dark mode for contrast */
+    --muted-foreground: 0 0% 80%;
+    --accent: 200 92% 54%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 100% 65%;
     --destructive-foreground: 0 0% 100%;

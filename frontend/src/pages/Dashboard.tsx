@@ -44,7 +44,8 @@ export default function Dashboard() {
   }, [selectedDay, foodLogs, moodLogs]);
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
+      {/* Hero */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-4">
         <h1 className="text-3xl font-display font-black text-foreground">{getGreeting()}</h1>
         <p className="text-muted-foreground font-display font-semibold">{formatDate()}</p>
@@ -66,39 +67,53 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-5">
-        <Link to="/food">
-          <motion.div
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-primary rounded-2xl p-5 card-shadow cursor-pointer relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-secondary/30 -translate-y-4 translate-x-4" />
-            <UtensilsCrossed className="text-primary-foreground mb-2" size={28} />
-            <p className="text-primary-foreground font-display font-bold text-lg">Log Food</p>
-            <p className="text-primary-foreground/70 font-display text-xs font-semibold">Quick & easy</p>
-          </motion.div>
-        </Link>
-        <Link to="/mood">
-          <motion.div
-            whileTap={{ scale: 0.95 }}
-            whileHover={{ scale: 1.02 }}
-            className="bg-accent rounded-2xl p-5 card-shadow cursor-pointer relative overflow-hidden"
-          >
-            <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-accent-foreground/10 -translate-y-4 translate-x-4" />
-            <Brain className="text-accent-foreground mb-2" size={28} />
-            <p className="text-accent-foreground font-display font-bold text-lg">Log Mood</p>
-            <p className="text-accent-foreground/70 font-display text-xs font-semibold">How do you feel?</p>
-          </motion.div>
-        </Link>
-      </div>
+      {/* Desktop: 2-column layout for quick actions + graph */}
+      <div className="lg:grid lg:grid-cols-2 lg:gap-6">
+        <div>
+          {/* Quick actions */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            <Link to="/food">
+              <motion.div
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                className="bg-primary rounded-2xl p-5 card-shadow cursor-pointer relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-secondary/30 -translate-y-4 translate-x-4" />
+                <UtensilsCrossed className="text-primary-foreground mb-2" size={28} />
+                <p className="text-primary-foreground font-display font-bold text-lg">Log Food</p>
+                <p className="text-primary-foreground/70 font-display text-xs font-semibold">Quick & easy</p>
+              </motion.div>
+            </Link>
+            <Link to="/mood">
+              <motion.div
+                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                className="bg-accent rounded-2xl p-5 card-shadow cursor-pointer relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 w-20 h-20 rounded-full bg-accent-foreground/10 -translate-y-4 translate-x-4" />
+                <Brain className="text-accent-foreground mb-2" size={28} />
+                <p className="text-accent-foreground font-display font-bold text-lg">Log Mood</p>
+                <p className="text-accent-foreground/70 font-display text-xs font-semibold">How do you feel?</p>
+              </motion.div>
+            </Link>
+          </div>
 
-      <div className="mb-5">
-        <WeekGraph
-          data={weekData}
-          selectedDay={selectedDay}
-          onDayClick={setSelectedDay}
-        />
+          {/* Focus Patterns on desktop left column */}
+          <div className="hidden lg:block mb-5">
+            <FocusPatterns />
+          </div>
+        </div>
+
+        <div>
+          {/* Week Graph – real data, colored by mood, tap day for detail */}
+          <div className="mb-5">
+            <WeekGraph
+              data={weekData}
+              selectedDay={selectedDay}
+              onDayClick={setSelectedDay}
+            />
+          </div>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -206,7 +221,10 @@ export default function Dashboard() {
         )}
       </AnimatePresence>
 
-      <FocusPatterns />
+      {/* Focus Patterns (Insight Cards) – hidden on desktop, shown in left column above */}
+      <div className="lg:hidden">
+        <FocusPatterns />
+      </div>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
