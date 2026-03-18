@@ -1,13 +1,8 @@
-## FILE 1: `README.md`
-
-```markdown
 ![License: Educational](https://img.shields.io/badge/license-Educational-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E=18-green)
 ![PostgreSQL](https://img.shields.io/badge/postgresql-16%2B-blue)
 
 # FocusFuel
-
-## EARS Requirements
 
 ## EARS Requirements
 
@@ -26,10 +21,6 @@
 3. The system shall send weekly summary updates to users.
 4. The system shall allow users to export their data in CSV or JSON format.
 5. The system shall provide AI-powered custom food analysis.
-
-## App Summary
-
-FocusFuel is a food and mood tracking application designed to help users discover personalized nutrition patterns that improve their mental performance. The primary user is anyone looking to optimize their focus, energy, and mental clarity through better understanding of how their diet affects their cognitive function. The app allows users to log their meals and snacks throughout the day, track their mental state (clarity, energy, stress, focus), and receive intelligent suggestions based on detected correlations. Over time, FocusFuel analyzes patterns to provide personalized food recommendations that align with the user's mental performance goals, making it easier to make informed dietary choices that support productivity and well-being.
 
 ## App Summary
 
