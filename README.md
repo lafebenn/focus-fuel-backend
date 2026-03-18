@@ -283,6 +283,10 @@ http://localhost:5173
 
 The vertical slice demonstrates the full stack integration through the **"Log Food"** feature. Follow these steps to verify it works end-to-end:
 
+## Responsive Testing
+
+The main pages were tested at multiple screen sizes to confirm they are responsive. Layouts, spacing, navigation, and content visibility were checked on desktop and smaller mobile sized viewports to make sure the app remains usable across different devices.
+
 ### Step 1: Trigger the Feature
 
 1. Open the app at `http://localhost:5173`
