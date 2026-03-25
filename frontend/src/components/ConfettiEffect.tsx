@@ -18,21 +18,23 @@ const colors = [
   'hsl(330 80% 60%)',   // pink
 ];
 
+const PIECE_COUNT = 15;
+
 export default function ConfettiEffect({ show }: { show: boolean }) {
   const [pieces, setPieces] = useState<ConfettiPiece[]>([]);
 
   useEffect(() => {
     if (!show) { setPieces([]); return; }
-    const newPieces: ConfettiPiece[] = Array.from({ length: 30 }, (_, i) => ({
+    const newPieces: ConfettiPiece[] = Array.from({ length: PIECE_COUNT }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
-      y: -(Math.random() * 20 + 10),
+      y: -(Math.random() * 12 + 6),
       rotate: Math.random() * 360,
       color: colors[i % colors.length],
-      size: Math.random() * 8 + 4,
+      size: Math.random() * 4 + 3,
     }));
     setPieces(newPieces);
-    const t = setTimeout(() => setPieces([]), 2500);
+    const t = setTimeout(() => setPieces([]), 1600);
     return () => clearTimeout(t);
   }, [show]);
 
@@ -41,23 +43,24 @@ export default function ConfettiEffect({ show }: { show: boolean }) {
       {pieces.map(p => (
         <motion.div
           key={p.id}
-          initial={{ opacity: 1, x: `${p.x}vw`, y: `${p.y}vh`, rotate: 0 }}
+          initial={{ opacity: 0.75, x: `${p.x}vw`, y: `${p.y}vh`, rotate: 0 }}
           animate={{
             y: '110vh',
-            rotate: p.rotate + 360,
-            opacity: [1, 1, 0],
+            rotate: p.rotate + 180,
+            opacity: [0.75, 0.55, 0],
           }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 2 + Math.random(), ease: 'easeIn' }}
+          transition={{ duration: 1.2 + Math.random() * 0.4, ease: 'easeIn' }}
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
             width: p.size,
             height: p.size,
-            borderRadius: p.size > 8 ? '50%' : '2px',
+            borderRadius: p.size > 6 ? '50%' : '2px',
             backgroundColor: p.color,
-            zIndex: 100,
+            /* Behind success overlays (z-50) so the modal stays readable */
+            zIndex: 40,
             pointerEvents: 'none',
           }}
         />

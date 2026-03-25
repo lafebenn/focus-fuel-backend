@@ -1,5 +1,5 @@
 import pool from '../config/database.js';
-
+ 
 export const getFoodLogs = async (req, res) => {
   try {
     const userId = req.query.userId || 1;
@@ -26,7 +26,7 @@ export const getFoodLogs = async (req, res) => {
       ORDER BY fl.LoggedAt DESC`,
       [userId]
     );
-
+ 
     res.json({
       success: true,
       count: result.rows.length,
@@ -41,28 +41,28 @@ export const getFoodLogs = async (req, res) => {
     });
   }
 };
-
+ 
 export const addFoodLog = async (req, res) => {
   const client = await pool.connect();
   
   try {
     const { userId = 1, foodName, emoji } = req.body;
-
+ 
     if (!foodName) {
       return res.status(400).json({ 
         success: false, 
         error: 'Food name is required' 
       });
     }
-
+ 
     await client.query('BEGIN');
-
+ 
     let foodId;
     const existingFood = await client.query(
       'SELECT FoodID FROM Foods WHERE LOWER(FoodName) = LOWER($1)',
       [foodName]
     );
-
+ 
     if (existingFood.rows.length > 0) {
       foodId = existingFood.rows[0].foodid;
     } else {
@@ -72,22 +72,22 @@ export const addFoodLog = async (req, res) => {
       );
       foodId = newFood.rows[0].foodid;
     }
-
+ 
     const foodLogResult = await client.query(
       'INSERT INTO FoodLogs (UserID, LoggedAt) VALUES ($1, CURRENT_TIMESTAMP) RETURNING FoodLogID, LoggedAt',
       [userId]
     );
-
+ 
     const foodLogId = foodLogResult.rows[0].foodlogid;
     const loggedAt = foodLogResult.rows[0].loggedat;
-
+ 
     await client.query(
       'INSERT INTO FoodLogItems (FoodLogID, FoodID) VALUES ($1, $2)',
       [foodLogId, foodId]
     );
-
+ 
     await client.query('COMMIT');
-
+ 
     res.status(201).json({
       success: true,
       message: 'Food logged successfully',
@@ -100,7 +100,7 @@ export const addFoodLog = async (req, res) => {
         userId
       }
     });
-
+ 
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error adding food log:', error);
@@ -113,24 +113,81 @@ export const addFoodLog = async (req, res) => {
     client.release();
   }
 };
-
+ 
+export const updateFoodLogTime = async (req, res) => {
+  try {
+    const { foodLogId } = req.params;
+    const { userId = 1, loggedAt } = req.body;
+ 
+    if (!loggedAt) {
+      return res.status(400).json({
+        success: false,
+        error: 'loggedAt timestamp is required'
+      });
+    }
+ 
+    const newTime = new Date(loggedAt);
+    if (isNaN(newTime.getTime())) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid timestamp format'
+      });
+    }
+ 
+    if (newTime > new Date()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Time cannot be in the future'
+      });
+    }
+ 
+    const result = await pool.query(
+      'UPDATE FoodLogs SET LoggedAt = $1 WHERE FoodLogID = $2 AND UserID = $3 RETURNING FoodLogID, LoggedAt',
+      [newTime.toISOString(), foodLogId, userId]
+    );
+ 
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Food log not found or unauthorized'
+      });
+    }
+ 
+    res.json({
+      success: true,
+      message: 'Food log time updated successfully',
+      data: {
+        foodLogId: result.rows[0].foodlogid,
+        loggedAt: result.rows[0].loggedat
+      }
+    });
+  } catch (error) {
+    console.error('Error updating food log time:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update food log time',
+      message: error.message
+    });
+  }
+};
+ 
 export const deleteFoodLog = async (req, res) => {
   try {
     const { foodLogId } = req.params;
     const userId = req.query.userId || 1;
-
+ 
     const result = await pool.query(
       'DELETE FROM FoodLogs WHERE FoodLogID = $1 AND UserID = $2 RETURNING FoodLogID',
       [foodLogId, userId]
     );
-
+ 
     if (result.rows.length === 0) {
       return res.status(404).json({ 
         success: false, 
         error: 'Food log not found or unauthorized' 
       });
     }
-
+ 
     res.json({
       success: true,
       message: 'Food log deleted successfully',
@@ -145,7 +202,7 @@ export const deleteFoodLog = async (req, res) => {
     });
   }
 };
-
+ 
 export const getTodaysFoodLogs = async (req, res) => {
   try {
     const userId = req.query.userId || 1;
@@ -164,7 +221,7 @@ export const getTodaysFoodLogs = async (req, res) => {
       ORDER BY fl.LoggedAt DESC`,
       [userId]
     );
-
+ 
     res.json({
       success: true,
       count: result.rows.length,
