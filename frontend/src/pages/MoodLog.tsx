@@ -77,7 +77,7 @@ export default function MoodLogPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
       <AnimatePresence mode="wait">
@@ -97,34 +97,56 @@ export default function MoodLogPage() {
                   transition={{ delay: 0.1 * i }}
                   className="bg-card rounded-2xl p-4 card-shadow"
                 >
-                  <div className="flex items-center justify-between mb-3">
+                  <label
+                    htmlFor={`mood-${s.key}`}
+                    className="flex items-center justify-between mb-3 cursor-pointer"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className="text-xl">{s.icon}</span>
+                      <span className="text-xl" aria-hidden="true">
+                        {s.icon}
+                      </span>
                       <span className="font-display font-bold text-foreground">{s.label}</span>
                     </div>
                     <motion.span
                       key={values[s.key]}
-                      initial={{ scale: 1.3 }}
+                      initial={{ scale: 1.06 }}
                       animate={{ scale: 1 }}
+                      transition={{ duration: 0.15 }}
                       className="text-2xl font-display font-black text-primary"
                     >
                       {values[s.key]}
                     </motion.span>
-                  </div>
+                  </label>
                   <input
                     type="range"
                     min={0}
                     max={10}
                     value={values[s.key]}
                     onChange={e => handleSlider(s.key, parseInt(e.target.value))}
+                    id={`mood-${s.key}`}
+                    aria-label={s.label}
+                    aria-valuemin={0}
+                    aria-valuemax={10}
+                    aria-valuenow={values[s.key]}
+                    aria-describedby={`mood-${s.key}-low mood-${s.key}-high`}
                     className="w-full h-3 rounded-full appearance-none cursor-pointer accent-primary bg-muted"
                     style={{
                       background: `linear-gradient(to right, hsl(var(--primary)) 0%, hsl(var(--primary)) ${values[s.key] * 10}%, hsl(var(--muted)) ${values[s.key] * 10}%, hsl(var(--muted)) 100%)`,
                     }}
                   />
                   <div className="flex justify-between mt-1">
-                    <span className="text-[11px] text-muted-foreground font-display">{s.lowLabel}</span>
-                    <span className="text-[11px] text-muted-foreground font-display">{s.highLabel}</span>
+                    <span
+                      id={`mood-${s.key}-low`}
+                      className="text-xs text-muted-foreground font-display"
+                    >
+                      {s.lowLabel}
+                    </span>
+                    <span
+                      id={`mood-${s.key}-high`}
+                      className="text-xs text-muted-foreground font-display"
+                    >
+                      {s.highLabel}
+                    </span>
                   </div>
                 </motion.div>
               ))}
@@ -176,12 +198,13 @@ export default function MoodLogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-sm flex items-center justify-center px-4"
+            className="fixed inset-0 z-50 bg-foreground/25 flex items-center justify-center px-4"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="bg-card rounded-3xl p-8 card-shadow text-center max-w-sm relative"
             >
               <button
@@ -192,12 +215,12 @@ export default function MoodLogPage() {
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', bounce: 0.6 }}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
                 className="text-7xl mb-4"
               >
-                🎉
+                ✓
               </motion.div>
               <h2 className="text-2xl font-display font-black text-foreground mb-2">Awesome!</h2>
               <p className="text-muted-foreground font-display font-semibold">You logged your mood ⭐</p>

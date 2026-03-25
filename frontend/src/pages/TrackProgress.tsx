@@ -108,7 +108,7 @@ export default function TrackProgressPage() {
   ];
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-display font-black text-foreground">Track Progress 📊</h1>
         <p className="text-muted-foreground font-display font-semibold">Dive deep into your patterns</p>
@@ -133,7 +133,7 @@ export default function TrackProgressPage() {
 
       {/* Charts view */}
       {viewMode === 'charts' && (
-        <div className="mt-5 space-y-4">
+        <div className="mt-5 space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
           {/* 30-day trend */}
           {trendData.length > 0 && (
             <motion.div
@@ -262,7 +262,7 @@ export default function TrackProgressPage() {
 
       {/* Recent logs view */}
       {viewMode === 'recent' && (
-        <div className="mt-5 space-y-4">
+        <div className="mt-5 space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
           {/* Recent food logs */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

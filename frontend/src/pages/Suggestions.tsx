@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BookmarkPlus, Check } from 'lucide-react';
+import { X, BookmarkPlus, Bookmark, Check } from 'lucide-react';
 import { foodSuggestions } from '@/utils/mockData';
 import type { FoodSuggestion, UserSettings, SuggestionMealType } from '@/utils/mockData';
 import { defaultSettings } from '@/utils/mockData';
@@ -44,6 +44,8 @@ export default function SuggestionsPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const { addFoodLog } = useData();
   const [settings] = useLocalStorage<UserSettings>('userSettings', defaultSettings);
+  const [savedIds, setSavedIds] = useLocalStorage<number[]>('savedSuggestions', []);
+  const [showSaved, setShowSaved] = useState(false);
 
   const filtered = useMemo(() => {
     let items = foodSuggestions;
@@ -67,6 +69,15 @@ export default function SuggestionsPage() {
     return items;
   }, [activeBenefitFilter, activeMealFilter, settings.allergies, settings.customAllergies]);
 
+  const toggleSave = (item: FoodSuggestion) => {
+    const isAlreadySaved = savedIds.includes(item.id);
+    setSavedIds(prev => isAlreadySaved ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+    if (!isAlreadySaved) {
+      setShowSaved(true);
+      setTimeout(() => setShowSaved(false), 1500);
+    }
+  };
+
   const logSuggestion = async (item: FoodSuggestion) => {
     await addFoodLog(item.name, item.emoji);
     setShowSuccess(true);
@@ -75,7 +86,7 @@ export default function SuggestionsPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
@@ -209,12 +220,30 @@ export default function SuggestionsPage() {
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  className="px-5 bg-muted text-foreground font-display font-bold py-3.5 rounded-xl"
+                  onClick={() => toggleSave(selectedItem)}
+                  className={`px-5 font-display font-bold py-3.5 rounded-xl transition-colors ${
+                    savedIds.includes(selectedItem.id)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
+                  }`}
                 >
-                  <BookmarkPlus size={18} />
+                  {savedIds.includes(selectedItem.id) ? <Bookmark size={18} /> : <BookmarkPlus size={18} />}
                 </motion.button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSaved && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-28 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-card card-shadow px-5 py-3 rounded-2xl flex items-center gap-2 font-display font-bold text-foreground text-sm"
+          >
+            <Bookmark size={16} className="text-primary" /> Saved to bookmarks
           </motion.div>
         )}
       </AnimatePresence>
@@ -225,12 +254,13 @@ export default function SuggestionsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-sm flex items-center justify-center px-4"
+            className="fixed inset-0 z-50 bg-foreground/25 flex items-center justify-center px-4"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="bg-card rounded-3xl p-8 card-shadow text-center max-w-sm relative"
             >
               <button
@@ -241,12 +271,12 @@ export default function SuggestionsPage() {
                 <X size={20} />
               </button>
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', bounce: 0.5 }}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
                 className="text-6xl mb-3"
               >
-                🎉
+                ✓
               </motion.div>
               <h3 className="text-xl font-display font-black text-foreground mb-1">Logged!</h3>
               <p className="text-sm text-muted-foreground font-display">Food added to your log</p>

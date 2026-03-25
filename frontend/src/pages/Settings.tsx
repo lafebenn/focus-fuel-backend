@@ -124,7 +124,7 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-display font-black text-foreground">Your preferences ⚙️</h1>
       </motion.div>
@@ -298,7 +298,7 @@ export default function SettingsPage() {
               <span className="font-display font-black text-primary text-lg">FM</span>
             </div>
             <div>
-              <p className="font-display font-bold text-foreground">FuelMind User</p>
+              <p className="font-display font-bold text-foreground">FocusFuel User</p>
               <p className="text-xs text-muted-foreground font-display">Profile features coming soon ✨</p>
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function SettingsPage() {
               <Star className="text-streak" size={20} />
               <span className="font-display font-bold text-foreground text-sm">Rate us</span>
             </button>
-            <p className="text-xs text-muted-foreground font-display">FuelMind v1.0.0</p>
+            <p className="text-xs text-muted-foreground font-display">FocusFuel v1.0.0</p>
           </div>
         </motion.div>
       </div>

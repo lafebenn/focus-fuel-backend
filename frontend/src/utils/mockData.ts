@@ -1,4 +1,4 @@
-// Mock data and types for FuelMind
+// Mock data and types for FocusFuel
 
 export interface FoodLog {
   id: string;
