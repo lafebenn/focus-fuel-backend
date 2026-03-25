@@ -1,8 +1,8 @@
-Here are **4 files** you can copy directly into your repo. I only changed what needed fixing and added the new content.
 
-***
 
-## FILE 1: `README.md` (full replacement)
+
+
+## FILE 1: `README.md` 
 
 Copy this entire thing and replace your current README.md.
 
