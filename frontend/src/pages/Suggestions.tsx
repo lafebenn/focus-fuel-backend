@@ -1,25 +1,45 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, BookmarkPlus, Bookmark, Check } from 'lucide-react';
+import { X, BookmarkPlus, Bookmark, Check } from 'lucide-react';
 import { foodSuggestions } from '@/utils/mockData';
-import type { FoodSuggestion, UserSettings } from '@/utils/mockData';
+import type { FoodSuggestion, UserSettings, SuggestionMealType } from '@/utils/mockData';
 import { defaultSettings } from '@/utils/mockData';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useData } from '@/context/DataContext';
 import ConfettiEffect from '@/components/ConfettiEffect';
 
-const filters = ['All', 'Energy ⚡', 'Focus 🎯', 'Mood 😌'];
+const benefitFilters = ['All', 'Energy ⚡', 'Focus 🎯', 'Mood 😌'] as const;
 
-const tagColorMap: Record<string, string> = {
-  primary: 'bg-primary text-primary-foreground',
-  accent: 'bg-accent text-accent-foreground',
-  warning: 'bg-warning text-warning-foreground',
-  streak: 'bg-streak text-streak-foreground',
-};
+const mealFilters: { label: string; value: SuggestionMealType | 'all' }[] = [
+  { label: 'All meals', value: 'all' },
+  { label: 'Breakfast', value: 'breakfast' },
+  { label: 'Lunch', value: 'lunch' },
+  { label: 'Dinner', value: 'dinner' },
+  { label: 'Snack', value: 'snack' },
+];
+
+/** One color per benefit everywhere (filters + detail modal). */
+function benefitVisualClass(benefitLabel: string): string {
+  const key = benefitLabel.split(' ')[0].toLowerCase();
+  if (key === 'energy') return 'bg-success text-success-foreground';
+  if (key === 'focus') return 'bg-primary text-primary-foreground';
+  if (key === 'mood') return 'bg-warning text-warning-foreground';
+  return 'bg-muted text-muted-foreground';
+}
+
+function benefitFilterButtonClass(filter: (typeof benefitFilters)[number], isActive: boolean): string {
+  if (!isActive) return 'bg-card text-foreground card-shadow';
+  if (filter === 'All') return 'bg-foreground text-background';
+  return benefitVisualClass(filter);
+}
+
+function formatMealType(m: SuggestionMealType): string {
+  return m.charAt(0).toUpperCase() + m.slice(1);
+}
 
 export default function SuggestionsPage() {
-  const [search, setSearch] = useState('');
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeBenefitFilter, setActiveBenefitFilter] = useState<(typeof benefitFilters)[number]>('All');
+  const [activeMealFilter, setActiveMealFilter] = useState<SuggestionMealType | 'all'>('all');
   const [selectedItem, setSelectedItem] = useState<FoodSuggestion | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
   const { addFoodLog } = useData();
@@ -29,11 +49,16 @@ export default function SuggestionsPage() {
 
   const filtered = useMemo(() => {
     let items = foodSuggestions;
-    if (search) items = items.filter(i => i.name.toLowerCase().includes(search.toLowerCase()));
-    if (activeFilter !== 'All') {
-      const filterKey = activeFilter.split(' ')[0].toLowerCase();
+
+    if (activeBenefitFilter !== 'All') {
+      const filterKey = activeBenefitFilter.split(' ')[0].toLowerCase();
       items = items.filter(i => i.benefitTags.some(tag => tag.toLowerCase().includes(filterKey)));
     }
+
+    if (activeMealFilter !== 'all') {
+      items = items.filter(i => i.mealTypes.includes(activeMealFilter));
+    }
+
     const allAllergies = [...settings.allergies, ...(settings.customAllergies || [])];
     if (allAllergies.length > 0) {
       items = items.filter(i => {
@@ -42,7 +67,7 @@ export default function SuggestionsPage() {
       });
     }
     return items;
-  }, [search, activeFilter, settings.allergies, settings.customAllergies]);
+  }, [activeBenefitFilter, activeMealFilter, settings.allergies, settings.customAllergies]);
 
   const toggleSave = (item: FoodSuggestion) => {
     const isAlreadySaved = savedIds.includes(item.id);
@@ -64,41 +89,47 @@ export default function SuggestionsPage() {
     <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
-      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-display font-black text-foreground">Fuel your focus 🚀</h1>
         <p className="text-muted-foreground font-display font-semibold">Foods to power your study session</p>
       </motion.div>
 
-      {/* Search */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }} className="mt-4 relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
-        <input
-          type="text"
-          placeholder="Search suggestions..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-full bg-card rounded-2xl pl-12 pr-4 py-3.5 font-display font-semibold text-foreground placeholder:text-muted-foreground card-shadow border-none outline-none focus:ring-2 focus:ring-primary"
-        />
-      </motion.div>
-
-      {/* Filters */}
-      <div className="flex gap-2 mt-3 overflow-x-auto pb-1">
-        {filters.map(f => (
-          <motion.button
-            key={f}
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setActiveFilter(f)}
-            className={`px-4 py-2 rounded-xl font-display font-bold text-sm whitespace-nowrap transition-colors ${
-              activeFilter === f ? 'bg-primary text-primary-foreground' : 'bg-card text-foreground card-shadow'
-            }`}
-          >
-            {f}
-          </motion.button>
-        ))}
+      <div className="mt-5">
+        <p className="text-[11px] font-display font-bold text-muted-foreground uppercase tracking-wide mb-2">Benefit</p>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {benefitFilters.map(f => (
+            <motion.button
+              key={f}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setActiveBenefitFilter(f)}
+              className={`px-4 py-2 rounded-xl font-display font-bold text-sm whitespace-nowrap transition-colors ${benefitFilterButtonClass(f, activeBenefitFilter === f)}`}
+            >
+              {f}
+            </motion.button>
+          ))}
+        </div>
       </div>
 
-      {/* Cards grid – smaller cards */}
+      <div className="mt-3">
+        <p className="text-[11px] font-display font-bold text-muted-foreground uppercase tracking-wide mb-2">Meal / snack</p>
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {mealFilters.map(({ label, value }) => (
+            <motion.button
+              key={value}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setActiveMealFilter(value)}
+              className={`px-3.5 py-2 rounded-xl font-display font-bold text-xs whitespace-nowrap transition-colors ${
+                activeMealFilter === value
+                  ? 'bg-secondary text-secondary-foreground ring-1 ring-primary/30'
+                  : 'bg-card text-foreground card-shadow'
+              }`}
+            >
+              {label}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
       <div className="grid grid-cols-2 gap-2 mt-4">
         {filtered.map((item, i) => (
           <motion.div
@@ -115,7 +146,10 @@ export default function SuggestionsPage() {
               <h4 className="font-display font-bold text-foreground text-xs leading-tight">{item.name}</h4>
               <div className="flex flex-wrap gap-1 mt-1.5 justify-center">
                 {item.benefitTags.map(tag => (
-                  <span key={tag} className={`text-[9px] font-display font-bold px-2 py-0.5 rounded-full ${tagColorMap[item.tagColor]}`}>
+                  <span
+                    key={tag}
+                    className={`text-[9px] font-display font-bold px-2 py-0.5 rounded-full ${benefitVisualClass(tag)}`}
+                  >
                     {tag}
                   </span>
                 ))}
@@ -125,7 +159,12 @@ export default function SuggestionsPage() {
         ))}
       </div>
 
-      {/* Detail modal */}
+      {filtered.length === 0 && (
+        <p className="text-center text-sm text-muted-foreground font-display mt-6">
+          No suggestions match your filters. Try different benefit or meal options.
+        </p>
+      )}
+
       <AnimatePresence>
         {selectedItem && (
           <motion.div
@@ -152,8 +191,16 @@ export default function SuggestionsPage() {
               <h2 className="text-2xl font-display font-black text-foreground">{selectedItem.name}</h2>
               <div className="flex flex-wrap gap-2 mt-2">
                 {selectedItem.benefitTags.map(tag => (
-                  <span key={tag} className={`text-xs font-display font-bold px-3 py-1.5 rounded-full ${tagColorMap[selectedItem.tagColor]}`}>
+                  <span
+                    key={tag}
+                    className={`text-xs font-display font-bold px-3 py-1.5 rounded-full ${benefitVisualClass(tag)}`}
+                  >
                     {tag}
+                  </span>
+                ))}
+                {selectedItem.mealTypes.map(m => (
+                  <span key={m} className="text-xs font-display font-bold px-3 py-1.5 rounded-full bg-muted text-muted-foreground">
+                    {formatMealType(m)}
                   </span>
                 ))}
               </div>
@@ -188,7 +235,6 @@ export default function SuggestionsPage() {
         )}
       </AnimatePresence>
 
-      {/* Saved toast */}
       <AnimatePresence>
         {showSaved && (
           <motion.div
@@ -202,7 +248,6 @@ export default function SuggestionsPage() {
         )}
       </AnimatePresence>
 
-      {/* Success modal (center, stays until dismissed) */}
       <AnimatePresence>
         {showSuccess && (
           <motion.div
