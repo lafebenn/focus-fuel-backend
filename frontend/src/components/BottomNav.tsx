@@ -19,7 +19,7 @@ export default function BottomNav() {
       <nav className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-56 z-50 bg-card border-r border-border">
         <div className="flex items-center gap-2 px-5 py-6 border-b border-border">
           <Zap className="text-primary" size={22} strokeWidth={2.5} />
-          <span className="font-display font-black text-xl text-foreground">FoodFuel</span>
+          <span className="font-display font-black text-xl text-foreground">FocusFuel</span>
         </div>
         <div className="flex flex-col gap-1 p-3 flex-1">
           {tabs.map(({ to, icon: Icon, label }) => {
