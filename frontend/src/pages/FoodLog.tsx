@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Plus, X, ArrowRight, HelpCircle, Wifi, WifiOff } from 'lucide-react';
+import { Search, Plus, X, ArrowRight, HelpCircle, Wifi, WifiOff, Pencil, Check } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 import { formatTime } from '@/utils/mockData';
 import { getSmartSuggestions, getSuggestionsFromRecentEats, smartSuggestionTagColorMap } from '@/utils/smartSuggestions';
@@ -8,37 +8,40 @@ import type { SmartSuggestionItem } from '@/utils/smartSuggestions';
 import { useNavigate } from 'react-router-dom';
 import ConfettiEffect from '@/components/ConfettiEffect';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-
+ 
 export default function FoodLogPage() {
-  const { foodLogs, moodLogs, backendConnected, addFoodLog, removeFoodLog } = useData();
+  const { foodLogs, moodLogs, backendConnected, addFoodLog, removeFoodLog, updateFoodLogTime } = useData();
   const [search, setSearch] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastAdded, setLastAdded] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  // Track which log item is being edited and its current input value
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingValue, setEditingValue] = useState('');
   const navigate = useNavigate();
-
+ 
   const todayLogs = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
     return foodLogs.filter(l => l.timestamp.slice(0, 10) === today);
   }, [foodLogs]);
-
+ 
   const topTwoFromRecent = useMemo(
     () => getSuggestionsFromRecentEats(foodLogs, moodLogs),
     [foodLogs, moodLogs]
   );
-
+ 
   const smartSuggestions = useMemo(
     () => getSmartSuggestions(moodLogs),
     [moodLogs]
   );
-
+ 
   const filteredSuggestions = useMemo(() => {
     if (!search) return smartSuggestions;
     return smartSuggestions.filter(s =>
       s.name.toLowerCase().includes(search.toLowerCase())
     );
   }, [smartSuggestions, search]);
-
+ 
   const handleAddFood = async (name: string, emoji: string) => {
     setIsLoading(true);
     await addFoodLog(name, emoji);
@@ -46,17 +49,42 @@ export default function FoodLogPage() {
     setShowSuccess(true);
     setIsLoading(false);
   };
-
+ 
   const addFromSearch = () => {
     if (!search.trim()) return;
     handleAddFood(search.trim(), '🍽️');
     setSearch('');
   };
-
+ 
+  // Convert a stored ISO timestamp to the format datetime-local input needs: "YYYY-MM-DDTHH:mm"
+  const toDatetimeLocal = (isoString: string) => {
+    const date = new Date(isoString);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+  };
+ 
+  const startEditing = (id: string, timestamp: string) => {
+    setEditingId(id);
+    setEditingValue(toDatetimeLocal(timestamp));
+  };
+ 
+  const confirmEdit = async (id: string) => {
+    if (editingValue) {
+      await updateFoodLogTime(id, new Date(editingValue).toISOString());
+    }
+    setEditingId(null);
+    setEditingValue('');
+  };
+ 
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditingValue('');
+  };
+ 
   return (
     <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
-
+ 
       {backendConnected !== null && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -80,12 +108,12 @@ export default function FoodLogPage() {
           )}
         </motion.div>
       )}
-
+ 
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-3xl font-display font-black text-foreground">What did you eat? 🍽️</h1>
         <p className="text-muted-foreground font-display font-semibold">Every meal matters!</p>
       </motion.div>
-
+ 
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -102,7 +130,7 @@ export default function FoodLogPage() {
           className="w-full bg-card rounded-2xl pl-12 pr-4 py-4 font-display font-semibold text-foreground placeholder:text-muted-foreground card-shadow border-none outline-none focus:ring-2 focus:ring-primary"
         />
       </motion.div>
-
+ 
       {search && filteredSuggestions.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -124,7 +152,7 @@ export default function FoodLogPage() {
           </motion.button>
         </motion.div>
       )}
-
+ 
       {topTwoFromRecent.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mt-4">
           <h3 className="text-xs font-display font-bold text-muted-foreground mb-2">Based on your recent eats</h3>
@@ -170,7 +198,7 @@ export default function FoodLogPage() {
           </div>
         </motion.div>
       )}
-
+ 
       {todayLogs.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="mt-5">
           <h3 className="text-sm font-display font-bold text-muted-foreground mb-2">
@@ -186,17 +214,53 @@ export default function FoodLogPage() {
                   exit={{ opacity: 0, x: 20 }}
                   className="bg-card rounded-xl px-4 py-3 card-shadow flex items-center justify-between"
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{log.emoji}</span>
-                    <div>
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <span className="text-xl shrink-0">{log.emoji}</span>
+                    <div className="flex-1 min-w-0">
                       <p className="font-display font-bold text-foreground text-sm">{log.food}</p>
-                      <p className="text-xs text-muted-foreground">{formatTime(log.timestamp)}</p>
+ 
+                      {/* Time display / edit */}
+                      {editingId === log.id ? (
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <input
+                            type="datetime-local"
+                            value={editingValue}
+                            max={new Date().toISOString().slice(0, 16)}
+                            onChange={e => setEditingValue(e.target.value)}
+                            className="text-xs font-display font-semibold bg-transparent text-foreground outline-none border-b border-primary"
+                            autoFocus
+                          />
+                          <button
+                            onClick={() => confirmEdit(log.id)}
+                            className="text-primary hover:text-primary/80 p-0.5"
+                            aria-label="Confirm time"
+                          >
+                            <Check size={14} />
+                          </button>
+                          <button
+                            onClick={cancelEdit}
+                            className="text-muted-foreground hover:text-destructive p-0.5"
+                            aria-label="Cancel edit"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => startEditing(log.id, log.timestamp)}
+                          className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors group"
+                          aria-label="Edit time"
+                        >
+                          <span>{formatTime(log.timestamp)}</span>
+                          <Pencil size={10} />
+                        </button>
+                      )}
                     </div>
                   </div>
                   <motion.button
                     whileTap={{ scale: 0.8 }}
                     onClick={() => removeFoodLog(log.id)}
-                    className="text-muted-foreground hover:text-destructive p-1"
+                    className="text-muted-foreground hover:text-destructive p-1 shrink-0"
                   >
                     <X size={18} />
                   </motion.button>
@@ -213,7 +277,7 @@ export default function FoodLogPage() {
           </motion.button>
         </motion.div>
       )}
-
+ 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-5">
         <h3 className="text-sm font-display font-bold text-muted-foreground mb-3">Smart Recommendations</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
@@ -258,7 +322,7 @@ export default function FoodLogPage() {
           ))}
         </div>
       </motion.div>
-
+ 
       <AnimatePresence>
         {showSuccess && (
           <motion.div

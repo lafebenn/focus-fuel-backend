@@ -3,17 +3,20 @@ import {
   getFoodLogs, 
   addFoodLog, 
   deleteFoodLog,
-  getTodaysFoodLogs 
+  getTodaysFoodLogs,
+  updateFoodLogTime
 } from '../controllers/foodLogController.js';
-
+ 
 const router = express.Router();
-
+ 
 router.get('/', getFoodLogs);
-
+ 
 router.get('/today', getTodaysFoodLogs);
-
+ 
 router.post('/', addFoodLog);
-
+ 
+router.patch('/:foodLogId', updateFoodLogTime);
+ 
 router.delete('/:foodLogId', deleteFoodLog);
-
+ 
 export default router;
