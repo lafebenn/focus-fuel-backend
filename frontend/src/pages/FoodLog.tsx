@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Plus, X, ArrowRight, HelpCircle, Wifi, WifiOff, Pencil, Check } from 'lucide-react';
 import { useData } from '@/context/DataContext';
@@ -15,11 +15,18 @@ export default function FoodLogPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [lastAdded, setLastAdded] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const successTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Track which log item is being edited and its current input value
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingValue, setEditingValue] = useState('');
   const navigate = useNavigate();
  
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
+    };
+  }, []);
+
   const todayLogs = useMemo(() => {
     const today = new Date().toISOString().slice(0, 10);
     return foodLogs.filter(l => l.timestamp.slice(0, 10) === today);
@@ -47,6 +54,8 @@ export default function FoodLogPage() {
     await addFoodLog(name, emoji);
     setLastAdded(name);
     setShowSuccess(true);
+    if (successTimeoutRef.current) clearTimeout(successTimeoutRef.current);
+    successTimeoutRef.current = setTimeout(() => setShowSuccess(false), 2000);
     setIsLoading(false);
   };
  
