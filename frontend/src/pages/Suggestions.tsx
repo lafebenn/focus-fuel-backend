@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, BookmarkPlus, Check } from 'lucide-react';
+import { Search, X, BookmarkPlus, Bookmark, Check } from 'lucide-react';
 import { foodSuggestions } from '@/utils/mockData';
 import type { FoodSuggestion, UserSettings } from '@/utils/mockData';
 import { defaultSettings } from '@/utils/mockData';
@@ -24,6 +24,8 @@ export default function SuggestionsPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const { addFoodLog } = useData();
   const [settings] = useLocalStorage<UserSettings>('userSettings', defaultSettings);
+  const [savedIds, setSavedIds] = useLocalStorage<number[]>('savedSuggestions', []);
+  const [showSaved, setShowSaved] = useState(false);
 
   const filtered = useMemo(() => {
     let items = foodSuggestions;
@@ -41,6 +43,15 @@ export default function SuggestionsPage() {
     }
     return items;
   }, [search, activeFilter, settings.allergies, settings.customAllergies]);
+
+  const toggleSave = (item: FoodSuggestion) => {
+    const isAlreadySaved = savedIds.includes(item.id);
+    setSavedIds(prev => isAlreadySaved ? prev.filter(id => id !== item.id) : [...prev, item.id]);
+    if (!isAlreadySaved) {
+      setShowSaved(true);
+      setTimeout(() => setShowSaved(false), 1500);
+    }
+  };
 
   const logSuggestion = async (item: FoodSuggestion) => {
     await addFoodLog(item.name, item.emoji);
@@ -162,12 +173,31 @@ export default function SuggestionsPage() {
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.95 }}
-                  className="px-5 bg-muted text-foreground font-display font-bold py-3.5 rounded-xl"
+                  onClick={() => toggleSave(selectedItem)}
+                  className={`px-5 font-display font-bold py-3.5 rounded-xl transition-colors ${
+                    savedIds.includes(selectedItem.id)
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
+                  }`}
                 >
-                  <BookmarkPlus size={18} />
+                  {savedIds.includes(selectedItem.id) ? <Bookmark size={18} /> : <BookmarkPlus size={18} />}
                 </motion.button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Saved toast */}
+      <AnimatePresence>
+        {showSaved && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-28 lg:bottom-8 left-1/2 -translate-x-1/2 z-50 bg-card card-shadow px-5 py-3 rounded-2xl flex items-center gap-2 font-display font-bold text-foreground text-sm"
+          >
+            <Bookmark size={16} className="text-primary" /> Saved to bookmarks
           </motion.div>
         )}
       </AnimatePresence>
