@@ -23,12 +23,12 @@ export const foodLogAPI = {
     const userId = getUserId();
     const response = await fetch(`${API_BASE_URL}/foodlogs/today?userId=${userId}`);
     if (!response.ok) {
-      throw new Error('Failed to fetch today\'s food logs');
+      throw new Error("Failed to fetch today's food logs");
     }
     return response.json();
   },
 
-  async add(foodName, emoji = '🍽️') {
+  async add(foodName: string, emoji = '🍽️') {
     const userId = getUserId();
     const response = await fetch(`${API_BASE_URL}/foodlogs`, {
       method: 'POST',
@@ -50,7 +50,27 @@ export const foodLogAPI = {
     return response.json();
   },
 
-  async delete(foodLogId) {
+  async updateTime(foodLogId: string, newTime: string) {
+    const userId = getUserId();
+    const response = await fetch(`${API_BASE_URL}/foodlogs/${foodLogId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        userId: parseInt(userId),
+        loggedAt: newTime,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to update food log time');
+    }
+
+    return response.json();
+  },
+
+  async delete(foodLogId: string) {
     const userId = getUserId();
     const response = await fetch(`${API_BASE_URL}/foodlogs/${foodLogId}?userId=${userId}`, {
       method: 'DELETE',
