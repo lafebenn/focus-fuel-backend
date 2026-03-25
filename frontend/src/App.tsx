@@ -20,24 +20,26 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <DataProvider>
-        <Toaster />
-        <Sonner position="top-center" toastOptions={{ className: 'font-display' }} />
-        <BrowserRouter>
-          <div className="max-w-md mx-auto min-h-screen relative">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/food" element={<FoodLogPage />} />
-              <Route path="/mood" element={<MoodLogPage />} />
-              <Route path="/suggest" element={<SuggestionsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/progress" element={<TrackProgressPage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+      <Toaster />
+      <Sonner position="top-center" toastOptions={{ className: 'font-display' }} />
+      <BrowserRouter>
+        <DataProvider>
+          <div className="min-h-screen lg:flex">
             <BottomNav />
+            <main className="flex-1 lg:ml-56 min-w-0">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/food" element={<FoodLogPage />} />
+                <Route path="/mood" element={<MoodLogPage />} />
+                <Route path="/suggest" element={<SuggestionsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/progress" element={<TrackProgressPage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
           </div>
-        </BrowserRouter>
-      </DataProvider>
+        </DataProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

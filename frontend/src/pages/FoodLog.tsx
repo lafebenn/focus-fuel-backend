@@ -54,7 +54,7 @@ export default function FoodLogPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 px-4 pt-6 max-w-md mx-auto">
+    <div className="min-h-screen pb-24 lg:pb-8 px-4 lg:px-10 pt-6 w-full">
       <ConfettiEffect show={showSuccess} />
 
       {backendConnected !== null && (
@@ -128,8 +128,8 @@ export default function FoodLogPage() {
       {topTwoFromRecent.length > 0 && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }} className="mt-4">
           <h3 className="text-xs font-display font-bold text-muted-foreground mb-2">Based on your recent eats</h3>
-          <div className="grid grid-cols-2 gap-2">
-            {topTwoFromRecent.map((item: SmartSuggestionItem, i: number) => (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+            {topTwoFromRecent.map((item, i) => (
               <motion.div
                 key={item.id}
                 initial={{ opacity: 0, scale: 0.96 }}
@@ -216,8 +216,8 @@ export default function FoodLogPage() {
 
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="mt-5">
         <h3 className="text-sm font-display font-bold text-muted-foreground mb-3">Smart Recommendations</h3>
-        <div className="grid grid-cols-2 gap-2">
-          {filteredSuggestions.map((item: SmartSuggestionItem, i: number) => (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+          {filteredSuggestions.map((item, i) => (
             <motion.div
               key={item.id}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -265,12 +265,13 @@ export default function FoodLogPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-foreground/40 backdrop-blur-sm flex items-center justify-center px-4"
+            className="fixed inset-0 z-50 bg-foreground/25 flex items-center justify-center px-4"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.98, opacity: 0 }}
+              transition={{ duration: 0.2 }}
               className="bg-card rounded-3xl p-8 card-shadow text-center max-w-sm relative"
             >
               <button
@@ -281,9 +282,9 @@ export default function FoodLogPage() {
                 <X size={20} />
               </button>
               <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', bounce: 0.5 }}
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
                 className="text-6xl mb-3"
               >
                 ✓

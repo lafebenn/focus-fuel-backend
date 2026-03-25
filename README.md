@@ -1,17 +1,26 @@
-
-
-
-
-## FILE 1: `README.md` 
-
-Copy this entire thing and replace your current README.md.
-
-```markdown
 ![License: Educational](https://img.shields.io/badge/license-Educational-blue)
 ![Node.js](https://img.shields.io/badge/node-%3E=18-green)
 ![PostgreSQL](https://img.shields.io/badge/postgresql-16%2B-blue)
 
 # FocusFuel
+
+## EARS Requirements
+
+### Complete
+1. The system shall allow users to log food entries.
+2. The system shall allow users to log mood and mental state data.
+3. When a user submits a food entry, the system shall store the data in PostgreSQL and display it in the interface.
+4. When a user submits a mood log, the system shall store the data and make it available for dashboard summaries and progress tracking.
+5. While the backend and database are connected, the system shall display connected data in the application.
+6. The system shall provide dashboard summaries, progress tracking, and recommendations based on stored user data.
+7. The system shall allow users to manage personal settings and allergy preferences.
+
+### Not Complete
+1. The system shall provide user authentication and secure login.
+2. The system shall support Docker Compose for one-command local setup.
+3. The system shall send weekly summary updates to users.
+4. The system shall allow users to export their data in CSV or JSON format.
+5. The system shall provide AI-powered custom food analysis.
 
 ## App Summary
 
@@ -282,6 +291,10 @@ http://localhost:5173
 ## Verifying the Vertical Slice
 
 The vertical slice demonstrates the full stack integration through the **"Log Food"** feature. Follow these steps to verify it works end-to-end:
+
+## Responsive Testing
+
+The main pages were tested at multiple screen sizes to confirm they are responsive. Layouts, spacing, navigation, and content visibility were checked on desktop and smaller mobile sized viewports to make sure the app remains usable across different devices.
 
 ### Step 1: Trigger the Feature
 
