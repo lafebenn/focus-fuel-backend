@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS UserAllergies CASCADE;
 DROP TABLE IF EXISTS FoodLogItems CASCADE;
 DROP TABLE IF EXISTS FoodLogs CASCADE;
 DROP TABLE IF EXISTS MentalLogs CASCADE;
+DROP TABLE IF EXISTS OkrMealMoodKr1 CASCADE;
 DROP TABLE IF EXISTS Foods CASCADE;
 DROP TABLE IF EXISTS Allergies CASCADE;
 DROP TABLE IF EXISTS Users CASCADE;
@@ -69,6 +70,18 @@ CREATE TABLE MentalLogs (
     LoggedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 8. OKR Tracking: Objective 1 / KR1
+-- KR1: % of meals that get at least one mood check-in within 2 hours.
+-- We keep this as a separate table to avoid changing existing core tables.
+CREATE TABLE OkrMealMoodKr1 (
+    FoodLogID INTEGER PRIMARY KEY REFERENCES FoodLogs(FoodLogID) ON DELETE CASCADE,
+    UserID INTEGER NOT NULL REFERENCES Users(UserID) ON DELETE CASCADE,
+    MealLoggedAt TIMESTAMP NOT NULL,
+    Satisfied BOOLEAN NOT NULL DEFAULT false,
+    SatisfiedAt TIMESTAMP NULL,
+    SatisfiedMentalLogID INTEGER NULL REFERENCES MentalLogs(Mental_Log_ID) ON DELETE SET NULL
+);
+
 -- Create indexes for common queries
 CREATE INDEX idx_foodlogs_userid ON FoodLogs(UserID);
 CREATE INDEX idx_foodlogs_loggedat ON FoodLogs(LoggedAt);
@@ -76,6 +89,7 @@ CREATE INDEX idx_mentallogs_userid ON MentalLogs(UserID);
 CREATE INDEX idx_mentallogs_loggedat ON MentalLogs(LoggedAt);
 CREATE INDEX idx_foodlogitems_foodlogid ON FoodLogItems(FoodLogID);
 CREATE INDEX idx_userallergies_userid ON UserAllergies(UserID);
+CREATE INDEX idx_okrmealmoodkr1_userid_meal ON OkrMealMoodKr1(UserID, MealLoggedAt);
 
 -- Success message
-SELECT 'Schema created successfully! 7 tables ready.' AS status;
+SELECT 'Schema created successfully! 8 tables ready (including OKR tracking).' AS status;

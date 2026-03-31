@@ -82,6 +82,12 @@ export const addFoodLog = async (req, res) => {
     const loggedAt = foodLogResult.rows[0].loggedat;
  
     await client.query(
+      `INSERT INTO OkrMealMoodKr1 (FoodLogID, UserID, MealLoggedAt, Satisfied)
+       VALUES ($1, $2, $3, false)`,
+      [foodLogId, userId, loggedAt]
+    );
+
+    await client.query(
       'INSERT INTO FoodLogItems (FoodLogID, FoodID) VALUES ($1, $2)',
       [foodLogId, foodId]
     );
@@ -153,6 +159,35 @@ export const updateFoodLogTime = async (req, res) => {
       });
     }
  
+    // Keep OKR tracking in sync if a meal time is edited.
+    // Reset satisfaction, then re-check whether a mood exists within 2 hours after the new meal time.
+    await pool.query(
+      `UPDATE OkrMealMoodKr1
+       SET MealLoggedAt = $1, Satisfied = false, SatisfiedAt = NULL, SatisfiedMentalLogID = NULL
+       WHERE FoodLogID = $2 AND UserID = $3`,
+      [newTime.toISOString(), foodLogId, userId]
+    );
+
+    const satisfied = await pool.query(
+      `SELECT Mental_Log_ID, LoggedAt
+       FROM MentalLogs
+       WHERE UserID = $1
+         AND LoggedAt >= $2
+         AND LoggedAt <= ($2::timestamp + interval '2 hours')
+       ORDER BY LoggedAt ASC
+       LIMIT 1`,
+      [userId, newTime.toISOString()]
+    );
+
+    if (satisfied.rows.length > 0) {
+      await pool.query(
+        `UPDATE OkrMealMoodKr1
+         SET Satisfied = true, SatisfiedAt = $1, SatisfiedMentalLogID = $2
+         WHERE FoodLogID = $3 AND UserID = $4`,
+        [satisfied.rows[0].loggedat, satisfied.rows[0].mental_log_id, foodLogId, userId]
+      );
+    }
+
     res.json({
       success: true,
       message: 'Food log time updated successfully',

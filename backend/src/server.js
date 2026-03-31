@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import foodLogRoutes from './routes/foodLogRoutes.js';
 import moodLogRoutes from './routes/moodLogRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import okrRoutes from './routes/okrRoutes.js';
 import pool from './config/database.js';
 
 dotenv.config();
@@ -36,6 +37,7 @@ app.get('/api/health', async (req, res) => {
 app.use('/api/foodlogs', foodLogRoutes);
 app.use('/api/moodlogs', moodLogRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/okrs', okrRoutes);
 
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
