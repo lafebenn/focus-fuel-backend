@@ -62,6 +62,7 @@ export const getTodaysMoodLogs = async (req, res) => {
 };
 
 export const addMoodLog = async (req, res) => {
+  const client = await pool.connect();
   try {
     const { userId = 1, clarity, energy, stress, focus, note } = req.body;
 
@@ -75,12 +76,41 @@ export const addMoodLog = async (req, res) => {
     const focusScore = Number(focus);
     const stressVal = Number(stress);
 
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    const result = await client.query(
       `INSERT INTO MentalLogs (UserID, BrainFog, Exhaustion, Stress, Burnout, FocusScore, Note, LoggedAt)
        VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP)
        RETURNING Mental_Log_ID, BrainFog, Exhaustion, Stress, Burnout, FocusScore, Note, LoggedAt`,
       [userId, brainFog, exhaustion, stressVal, burnout, focusScore, note || null]
     );
+
+    const moodLoggedAt = result.rows[0].loggedat;
+    const mentalLogId = result.rows[0].mental_log_id;
+
+    // OKR KR1: mark the most recent *unsatisfied* meal within the last 2 hours as satisfied.
+    const candidateMeal = await client.query(
+      `SELECT FoodLogID
+       FROM OkrMealMoodKr1
+       WHERE UserID = $1
+         AND Satisfied = false
+         AND MealLoggedAt <= $2
+         AND MealLoggedAt >= ($2::timestamp - interval '2 hours')
+       ORDER BY MealLoggedAt DESC
+       LIMIT 1`,
+      [userId, moodLoggedAt]
+    );
+
+    if (candidateMeal.rows.length > 0) {
+      await client.query(
+        `UPDATE OkrMealMoodKr1
+         SET Satisfied = true, SatisfiedAt = $1, SatisfiedMentalLogID = $2
+         WHERE FoodLogID = $3`,
+        [moodLoggedAt, mentalLogId, candidateMeal.rows[0].foodlogid]
+      );
+    }
+
+    await client.query('COMMIT');
 
     res.status(201).json({
       success: true,
@@ -88,8 +118,11 @@ export const addMoodLog = async (req, res) => {
       data: dbRowToFrontend(result.rows[0]),
     });
   } catch (error) {
+    try { await client.query('ROLLBACK'); } catch {}
     console.error('Error adding mood log:', error);
     res.status(500).json({ success: false, error: 'Failed to add mood log', message: error.message });
+  } finally {
+    client.release();
   }
 };
 
