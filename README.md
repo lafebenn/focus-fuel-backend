@@ -15,13 +15,6 @@
 6. The system shall provide dashboard summaries, progress tracking, and recommendations based on stored user data.
 7. The system shall allow users to manage personal settings and allergy preferences.
 
-### Not Complete
-1. The system shall provide user authentication and secure login.
-2. The system shall support Docker Compose for one-command local setup.
-3. The system shall send weekly summary updates to users.
-4. The system shall allow users to export their data in CSV or JSON format.
-5. The system shall provide AI-powered custom food analysis.
-
 ## App Summary
 
 FocusFuel is a food and mood tracking application designed to help users discover personalized nutrition patterns that improve their mental performance. The primary user is anyone looking to optimize their focus, energy, and mental clarity through better understanding of how their diet affects their cognitive function. The app allows users to log their meals and snacks throughout the day, track their mental state (clarity, energy, stress, focus), and receive intelligent suggestions based on detected correlations. Over time, FocusFuel analyzes patterns to provide personalized food recommendations that align with the user's mental performance goals, making it easier to make informed dietary choices that support productivity and well-being.
@@ -70,7 +63,7 @@ FocusFuel is a food and mood tracking application designed to help users discove
 │   - Food Log UI                 │
 │   - Mood Tracking               │
 │   - Dashboard & Analytics       │
-│   Port: 5173                    │
+│   Port: 8080                    │
 └────────┬────────────────────────┘
          │ HTTP REST API
          ▼
@@ -190,7 +183,11 @@ You should see confirmation messages showing:
 2. Copy the example environment file:
 
    ```bash
+   # macOS/Linux
    cp .env.example .env
+
+   # Windows PowerShell
+   Copy-Item .env.example .env
    ```
 
 3. Edit the `.env` file with your PostgreSQL credentials:
@@ -215,7 +212,11 @@ You should see confirmation messages showing:
 2. Copy the example environment file:
 
    ```bash
+   # macOS/Linux
    cp .env.example .env
+
+   # Windows PowerShell
+   Copy-Item .env.example .env
    ```
 
 3. The default configuration should work:
@@ -274,18 +275,18 @@ You should see:
 
 ```
 VITE v7.3.1 ready in X ms
-➜  Local:   http://localhost:5173/
+➜  Local:   http://localhost:8080/
 ➜  Network: use --host to expose
 ```
 
-**Important**: If your frontend opens on a different port (check your `frontend/vite.config.ts` for the `server.port` setting), update the URL accordingly. The default Vite port is 5173.
+**Important**: This project configures Vite to run on port `8080` (see `frontend/vite.config.ts`). If your frontend opens on a different port, use the URL shown in your terminal output.
 
 ### Access the Application
 
 Open your browser and navigate to:
 
 ```
-http://localhost:5173
+http://localhost:8080
 ```
 
 ## Verifying the Vertical Slice
@@ -298,7 +299,7 @@ The main pages were tested at multiple screen sizes to confirm they are responsi
 
 ### Step 1: Trigger the Feature
 
-1. Open the app at `http://localhost:5173`
+1. Open the app at `http://localhost:8080`
 2. Click on the **"Log Food"** button on the dashboard, or navigate directly to `/food`
 3. You should see a **green status indicator** at the top saying "Connected to database"
 4. In the "Smart Recommendations" section, click the **+ button** next to any food item (e.g., "Almonds")
@@ -459,11 +460,15 @@ See `backend/db/schema.sql` for the complete schema definition.
 
 - Ensure PostgreSQL is running: `pg_isready`
 - Check your `.env` file credentials
-- Verify port 5000 is not in use: `lsof -i :5000`
+- Verify port 5000 is not in use:
+  - macOS/Linux: `lsof -i :5000`
+  - Windows PowerShell: `Get-NetTCPConnection -LocalPort 5000`
 
 ### Database connection errors
 
-- Confirm database exists: `psql -U postgres -l | grep focusfuel_db`
+- Confirm database exists:
+  - macOS/Linux: `psql -U postgres -l | grep focusfuel_db`
+  - Windows PowerShell: `psql -U postgres -l | Select-String focusfuel_db`
 - Check PostgreSQL is accepting connections
 - Verify username and password in `.env`
 
@@ -476,11 +481,11 @@ See `backend/db/schema.sql` for the complete schema definition.
 ### CORS errors in browser
 
 - Ensure backend has CORS enabled (already configured in `server.js`)
-- Check that you're accessing frontend via `localhost:5173` (or the port specified in `vite.config.ts`)
+- Check that you're accessing frontend via `localhost:8080` (or the port specified in `vite.config.ts`)
 
-### Frontend doesn't load on port 5173
+### Frontend doesn't load on port 8080
 
-- Check `frontend/vite.config.ts` — the `server.port` setting may be configured to a different port (e.g., 8080)
+- Check `frontend/vite.config.ts` — by default this project uses `server.port: 8080`
 - Navigate to the port shown in the terminal output after running `npm run dev`
 
 ## Team
@@ -499,52 +504,3 @@ See [CHANGELOG.md](./CHANGELOG.md) for version history.
 ## License
 
 This project is for educational purposes as part of IS 401.
-```
-
-***
-
-## FILE 2: `CHANGELOG.md` (new file)
-
-```markdown
-# Changelog
-
-All notable changes to the FocusFuel project will be documented in this file.
-
-## [Unreleased]
-
-### Planned
-- Add Docker Compose setup for one-command environment setup
-- Add user authentication with JWT
-- Add AI-powered custom food analysis (opt-in)
-- Add data export (CSV/JSON) in Settings
-- Add weekly email summaries
-
-## [1.0.0] - 2026-03
-
-### Added
-- Full PERN stack application (PostgreSQL, Express, React, Node.js)
-- 7-table database schema with ERD-compliant design
-- Food logging vertical slice (GET, POST, DELETE)
-- Mood logging API and UI
-- User settings management
-- Food suggestions page with filtering by Energy, Focus, and Mood
-- Week graph with mood-based coloring and day detail modals
-- Track Progress page with 30-day trends, food frequency, and correlation insights
-- Settings page with custom reminder schedules and allergy management
-- Dashboard with quick actions and today's summary
-- Streak tracking display
-- Confetti celebration effect on successful food logs
-- Focus patterns component on dashboard
-
-### Backend
-- Express server with CORS and error handling
-- PostgreSQL connection pool with dotenv configuration
-- RESTful API routes for food logs, mood logs, and user settings
-- Health check endpoint with database connectivity verification
-- Database transaction handling for food log operations
-- Parameterized queries for SQL injection prevention
-
-### Frontend
-- React 18.3 + TypeScript with Vite 7.3
-- shadcn/ui component library with Radix UI primitives
-- Tailwind CSS 3.
